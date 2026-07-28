@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Applications | Uttara Bank Career Portal</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+  </head>
+  <body class="admin-body" data-portal-page="applications">
+    <header th:replace="~{portal/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{portal/fragments/sidebar :: sidebar('applications')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Your activity</span>
+            <h1>My applications</h1>
+            <p>
+              Track drafts, submitted applications, and permanent tracking
+              numbers.
+            </p>
+          </div>
+          <a class="btn btn-primary" th:href="@{/portal/jobs}"
+            >Find a position</a
+          >
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Position</th>
+                  <th>Tracking number</th>
+                  <th>Status</th>
+                  <th>Submitted</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="applicationTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script th:src="@{/js/portal.js(v=9)}"></script>
+  </body>
+</html>

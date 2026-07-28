@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Application details | Career Portal Administration</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=6)}" />
+  </head>
+  <body class="admin-body" data-admin-page="application-details">
+    <header th:replace="~{admin/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{admin/fragments/sidebar :: sidebar('applications')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Application details</span>
+            <h1 id="applicationDetailsTitle">Loading application...</h1>
+            <p id="applicationDetailsTracking"></p>
+          </div>
+          <a class="btn btn-secondary" th:href="@{/admin/applications}">
+            Back to applications
+          </a>
+        </div>
+        <div id="applicationDetails"></div>
+      </main>
+    </div>
+    <script th:src="@{/js/admin.js(v=3)}"></script>
+  </body>
+</html>

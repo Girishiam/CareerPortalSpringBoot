@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Create job | Career Portal Administration</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=6)}" />
+  </head>
+  <body class="admin-body" data-admin-page="job-form">
+    <header th:replace="~{admin/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside th:replace="~{admin/fragments/sidebar :: sidebar('jobs')}"></aside>
+      <main class="admin-main">
+        <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Job management</span>
+            <h1>Create a job posting</h1>
+            <p>The backend assigns creator, state, and workflow timestamps.</p>
+          </div>
+          <a class="btn btn-secondary" th:href="@{/admin/jobs}">
+            Back to jobs
+          </a>
+        </div>
+
+        <form class="card form-card job-config-form" id="adminJobForm">
+          <div class="form-section-head">
+            <span class="page-kicker">Posting details</span>
+            <h2>Job information</h2>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Job code *</label>
+              <input name="jobCode" maxlength="40" required />
+            </div>
+            <div class="field">
+              <label>Job title *</label>
+              <input name="jobTitle" maxlength="200" required />
+            </div>
+            <div class="field">
+              <label>Job designation *</label>
+              <input name="designation" maxlength="150" required />
+            </div>
+            <div class="field">
+              <label>Department *</label>
+              <select name="departmentId" required></select>
+            </div>
+            <div class="field">
+              <label>Employment type *</label>
+              <select name="employmentType" required>
+                <option value="PERMANENT">Permanent</option>
+                <option value="PROBATIONARY">Probationary</option>
+                <option value="CONTRACTUAL">Contractual</option>
+                <option value="INTERNSHIP">Internship</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Vacancies *</label>
+              <input name="vacancyCount" type="number" min="1" required />
+            </div>
+            <div class="field">
+              <label>Experience type</label>
+              <select name="experienceType">
+                <option value="">Select one</option>
+                <option value="FRESH">Fresh candidates</option>
+                <option value="EXPERIENCED">Experienced candidates</option>
+                <option value="BOTH">Fresh and experienced</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Job location</label>
+              <input name="jobLocation" maxlength="200" />
+            </div>
+            <div class="field">
+              <label>Salary</label>
+              <input name="salaryDetails" maxlength="200" placeholder="As per bank policy" />
+            </div>
+            <div class="field">
+              <label>Job publication *</label>
+              <select name="publicationChannel" required>
+                <option value="CAREER_PORTAL">Career portal</option>
+                <option value="INTERNAL">Internal only</option>
+                <option value="BOTH">Internal and public</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Age reference date *</label>
+              <input name="ageReferenceDate" type="date" required />
+            </div>
+            <div class="field">
+              <label>Application starts *</label>
+              <input name="applicationStartAt" type="datetime-local" required />
+            </div>
+            <div class="field">
+              <label>Application ends *</label>
+              <input name="applicationEndAt" type="datetime-local" required />
+            </div>
+            <div class="field full">
+              <label>Job context</label>
+              <textarea name="jobContext"></textarea>
+            </div>
+            <div class="field full">
+              <label>Job description *</label>
+              <textarea name="jobDescription" required></textarea>
+            </div>
+          </div>
+
+          <div class="form-section-head">
+            <span class="page-kicker">Eligibility rules</span>
+            <h2>Education and applicant categories</h2>
+          </div>
+          <div class="field full">
+            <label class="check-option">
+              <input name="specificEducationRequired" type="checkbox" />
+              Add specific education requirements
+            </label>
+          </div>
+          <div id="educationRequirements" class="requirements-panel" hidden>
+            <div class="requirement-row requirement-labels" aria-hidden="true">
+              <span>Education level</span><span>Minimum GPA/division</span><span>Result type</span><span></span>
+            </div>
+            <div id="educationRequirementRows"></div>
+            <button class="btn btn-secondary" id="addEducationRequirement" type="button">
+              Add education requirement
+            </button>
+          </div>
+          <div class="form-grid flag-grid">
+            <fieldset class="field full option-group">
+              <legend>Eligible applicant category *</legend>
+              <label class="check-option">
+                <input name="existingEmployeeEligible" type="checkbox" />
+                Existing employee
+              </label>
+              <label class="check-option">
+                <input name="externalApplicantEligible" type="checkbox" checked />
+                External applicant
+              </label>
+            </fieldset>
+            <div class="field" data-age-field="existing">
+              <label>Max age for existing employee</label>
+              <input name="existingEmployeeMaxAge" type="number" min="1" max="100" />
+            </div>
+            <div class="field" data-age-field="external">
+              <label>Max age for external applicant *</label>
+              <input name="externalApplicantMaxAge" type="number" min="1" max="100" value="32" required />
+            </div>
+            <div class="field full">
+              <label>Maximum designation</label>
+              <input name="maximumDesignation" maxlength="150" />
+            </div>
+          </div>
+
+          <div class="form-section-head">
+            <span class="page-kicker">Application flags</span>
+            <h2>Required declarations and information</h2>
+          </div>
+          <div class="flag-card-grid">
+            <label class="flag-card"><input name="spouseDataRequired" type="checkbox" /><span><strong>Spouse data</strong><small>Ask applicants for spouse information</small></span></label>
+            <label class="flag-card"><input name="mobileRequired" type="checkbox" checked /><span><strong>Mobile</strong><small>Require a mobile contact</small></span></label>
+            <label class="flag-card"><input name="emailRequired" type="checkbox" checked /><span><strong>Email</strong><small>Require an email contact</small></span></label>
+            <label class="flag-card"><input name="relativeDeclarationRequired" type="checkbox" /><span><strong>Relative in UBL</strong><small>Require a relative declaration</small></span></label>
+            <label class="flag-card"><input name="allowOtherPostApplication" type="checkbox" checked /><span><strong>Other-post applications</strong><small>Allow applying to another post</small></span></label>
+            <label class="flag-card"><input name="coverLetterCvRequired" type="checkbox" /><span><strong>Cover letter &amp; CV</strong><small>Require both with the application</small></span></label>
+          </div>
+
+          <div class="form-section-head">
+            <span class="page-kicker">Candidate-facing content</span>
+            <h2>Application page details</h2>
+          </div>
+          <div class="form-grid">
+            <div class="field full">
+              <label>Responsibilities</label>
+              <textarea name="responsibilities"></textarea>
+            </div>
+            <div class="field full">
+              <label>Additional requirements</label>
+              <textarea name="additionalRequirements"></textarea>
+            </div>
+            <div class="field full">
+              <label>Compensation &amp; other benefits</label>
+              <textarea name="compensationBenefits"></textarea>
+            </div>
+            <div class="field full">
+              <label>Apply page header *</label>
+              <textarea
+                name="applyPageHeader"
+                maxlength="300"
+                placeholder="Example: Apply for Management Trainee Officer"
+                required
+              ></textarea>
+              <span class="hint">
+                The short heading applicants will see at the top of this job's application page.
+              </span>
+            </div>
+            <div class="field full">
+              <label>Circular letter</label>
+              <input name="circularLetter" type="file" accept=".pdf,.doc,.docx" />
+              <span class="hint">PDF, DOC, or DOCX. The file name is stored with this posting.</span>
+            </div>
+          </div>
+          <div class="form-footer">
+            <span class="hint">The new job starts in DRAFT state.</span>
+            <button class="btn btn-primary" type="submit">Create job</button>
+          </div>
+        </form>
+      </main>
+    </div>
+    <script th:src="@{/js/admin.js(v=7)}"></script>
+  </body>
+</html>

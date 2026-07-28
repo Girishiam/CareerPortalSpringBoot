@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Application Details | Uttara Bank Career Portal</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+  </head>
+  <body class="admin-body" data-portal-page="application-details">
+    <header th:replace="~{portal/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{portal/fragments/sidebar :: sidebar('applications')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <a class="back-link" th:href="@{/portal/applications}">
+          ← Back to my applications
+        </a>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker" id="applicationCode">Application</span>
+            <h1 id="applicationTitle">Loading application...</h1>
+            <p id="applicationTracking">Retrieving your application record.</p>
+          </div>
+          <button
+            class="btn btn-primary"
+            id="submitApplication"
+            type="button"
+            hidden
+          >
+            Submit application
+          </button>
+        </div>
+        <section class="card details-grid" id="applicationFacts"></section>
+        <div class="content-grid">
+          <article class="card">
+            <span class="page-kicker">Submitted identity</span>
+            <h2>Applicant snapshot</h2>
+            <div class="details-list" id="profileSnapshot"></div>
+          </article>
+          <article class="card">
+            <span class="page-kicker">Academic record</span>
+            <h2>Education snapshot</h2>
+            <div class="list" id="snapshotEducation"></div>
+          </article>
+          <article class="card">
+            <span class="page-kicker">Career history</span>
+            <h2>Experience snapshot</h2>
+            <div class="list" id="snapshotExperience"></div>
+          </article>
+          <article class="card">
+            <span class="page-kicker">Attachments</span>
+            <h2>Document snapshot</h2>
+            <div class="list" id="snapshotDocuments"></div>
+          </article>
+        </div>
+      </main>
+    </div>
+    <script th:src="@{/js/portal.js(v=9)}"></script>
+  </body>
+</html>

@@ -1,0 +1,33 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 290 64"
+  role="img"
+  aria-labelledby="title"
+>
+  <title id="title">Uttara Bank Career Portal</title>
+  <rect width="64" height="64" rx="16" fill="#007A3D" />
+  <path
+    d="M17 17h8v25c0 4 2.6 6 7 6s7-2 7-6V17h8v25c0 9-5.7 14-15 14S17 51 17 42V17Z"
+    fill="#fff"
+  />
+  <text
+    x="80"
+    y="29"
+    fill="#1F2937"
+    font-family="Arial,sans-serif"
+    font-size="21"
+    font-weight="700"
+  >
+    Uttara Bank
+  </text>
+  <text
+    x="80"
+    y="49"
+    fill="#007A3D"
+    font-family="Arial,sans-serif"
+    font-size="15"
+    font-weight="600"
+  >
+    Career Portal
+  </text>
+</svg>

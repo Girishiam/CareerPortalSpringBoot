@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Applications | Career Portal Administration</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=6)}" />
+  </head>
+  <body class="admin-body" data-admin-page="applications">
+    <header th:replace="~{admin/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{admin/fragments/sidebar :: sidebar('applications')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Candidate review</span>
+            <h1>Applications</h1>
+            <p>Select a job to review its candidates.</p>
+          </div>
+          <select class="admin-job-filter" id="applicationJobFilter"></select>
+        </div>
+        <article class="card">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Candidate</th>
+                  <th>CV number</th>
+                  <th>Contact</th>
+                  <th>Tracking</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="applicationRows"></tbody>
+            </table>
+          </div>
+          <nav th:replace="~{admin/fragments/pagination :: pagination}"></nav>
+        </article>
+      </main>
+    </div>
+    <script th:src="@{/js/admin.js(v=3)}"></script>
+  </body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Education | Uttara Bank Career Portal</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+  </head>
+  <body class="admin-body" data-portal-page="education">
+    <header th:replace="~{portal/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{portal/fragments/sidebar :: sidebar('education')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Qualifications</span>
+            <h1>Education</h1>
+            <p>Add your academic history.</p>
+          </div>
+          <button class="btn btn-primary" id="toggleEducationForm">
+            Add education
+          </button>
+        </div>
+        <form class="card form-card" id="educationForm" hidden>
+          <div class="form-grid">
+            <div class="field">
+              <label>Qualification *</label
+              ><select name="qualificationId" required></select>
+            </div>
+            <div class="field">
+              <label>Subject</label
+              ><select name="subjectId"></select>
+            </div>
+            <div class="field">
+              <label>Institution</label
+              ><select name="institutionId"></select>
+            </div>
+            <div class="field">
+              <label>Other institution</label
+              ><input name="institutionName" maxlength="200" />
+            </div>
+            <div class="field">
+              <label>Result type *</label
+              ><select name="resultType" required>
+                <option value="CGPA">CGPA</option>
+                <option value="GPA">GPA</option>
+                <option value="DIVISION">Division</option>
+                <option value="CLASS">Class</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Result value</label
+              ><input name="resultValue" type="number" step="0.01" />
+            </div>
+            <div class="field">
+              <label>Result scale</label
+              ><input name="resultScale" type="number" step="0.01" />
+            </div>
+            <div class="field">
+              <label>Division or class</label><input name="resultGrade" />
+            </div>
+            <div class="field">
+              <label>Passing year *</label
+              ><input name="passingYear" type="number" min="1950" required />
+            </div>
+            <div class="field checkbox-field">
+              <label
+                ><input name="isHighestDegree" type="checkbox" /> Highest
+                degree</label
+              >
+            </div>
+          </div>
+          <div class="form-footer">
+            <span class="hint">Results are validated before saving.</span
+            ><button class="btn btn-primary">Save education</button>
+          </div>
+        </form>
+        <div class="card"><div class="list" id="educationList"></div></div>
+      </main>
+    </div>
+    <script th:src="@{/js/portal.js(v=9)}"></script>
+  </body>
+</html>

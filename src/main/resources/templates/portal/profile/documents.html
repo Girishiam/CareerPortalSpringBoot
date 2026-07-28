@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Documents | Uttara Bank Career Portal</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+  </head>
+  <body class="admin-body" data-portal-page="documents">
+    <header th:replace="~{portal/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{portal/fragments/sidebar :: sidebar('documents')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Verified files</span>
+            <h1>Documents</h1>
+            <p>Files are validated by their actual content.</p>
+          </div>
+        </div>
+        <form class="card" id="documentForm" enctype="multipart/form-data">
+          <div class="form-grid">
+            <div class="field">
+              <label>Document type *</label
+              ><select name="documentType">
+                <option value="PHOTO">Photo</option>
+                <option value="SIGNATURE">Signature</option>
+                <option value="NID">National ID</option>
+                <option value="CERTIFICATE">Certificate</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Choose file *</label
+              ><input
+                name="file"
+                type="file"
+                accept=".jpg,.jpeg,.png,.pdf"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-footer">
+            <span class="hint">Maximum 5 MB. Images: 200×200 to 1000×1000.</span
+            ><button class="btn btn-primary">Validate and upload</button>
+          </div>
+        </form>
+        <div class="card">
+          <h2>Current documents</h2>
+          <div class="list" id="documentList"></div>
+        </div>
+      </main>
+    </div>
+    <script th:src="@{/js/portal.js(v=9)}"></script>
+  </body>
+</html>

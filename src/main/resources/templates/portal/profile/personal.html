@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Personal profile | Uttara Bank Career Portal</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+  </head>
+  <body class="admin-body" data-portal-page="personal">
+    <header th:replace="~{portal/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{portal/fragments/sidebar :: sidebar('personal')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Your CV</span>
+            <h1>Personal profile</h1>
+            <p>Keep your legal and contact information accurate.</p>
+          </div>
+        </div>
+        <form class="card form-card" id="profileForm">
+          <div class="form-grid">
+            <div class="field full">
+              <label>Full name *</label
+              ><input name="fullName" maxlength="150" required />
+            </div>
+            <div class="field">
+              <label>Father's name</label
+              ><input name="fatherName" maxlength="150" />
+            </div>
+            <div class="field">
+              <label>Mother's name</label
+              ><input name="motherName" maxlength="150" />
+            </div>
+            <div class="field">
+              <label>Date of birth *</label
+              ><input name="dateOfBirth" type="date" required />
+            </div>
+            <div class="field">
+              <label>Gender</label
+              ><select name="gender">
+                <option value="">Select gender</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Marital status</label
+              ><select name="maritalStatus">
+                <option value="">Select status</option>
+                <option value="UNMARRIED">Unmarried</option>
+                <option value="MARRIED">Married</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Nationality</label><input name="nationality" />
+            </div>
+            <div class="field">
+              <label>NID number</label><input name="nidNumber" maxlength="30" />
+            </div>
+            <div class="field">
+              <label>Email</label><input name="email" type="email" />
+            </div>
+            <div class="field">
+              <label>Mobile</label
+              ><input name="mobile" type="tel" pattern="01[3-9][0-9]{8}" />
+            </div>
+          </div>
+          <div class="form-footer">
+            <span class="hint">Submitted snapshots remain unchanged.</span
+            ><button class="btn btn-primary" type="submit">
+              Save personal information
+            </button>
+          </div>
+        </form>
+      </main>
+    </div>
+    <script th:src="@{/js/portal.js(v=9)}"></script>
+  </body>
+</html>

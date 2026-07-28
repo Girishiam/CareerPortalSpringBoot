@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard | Career Portal Administration</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=6)}" />
+  </head>
+  <body class="admin-body" data-admin-page="dashboard">
+    <header th:replace="~{admin/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{admin/fragments/sidebar :: sidebar('dashboard')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Recruitment overview</span>
+            <h1>Administration dashboard</h1>
+            <p>Current activity across the career portal.</p>
+          </div>
+          <a class="btn btn-primary" th:href="@{/admin/jobs/new}">
+            Create new job
+          </a>
+        </div>
+
+        <div class="stats admin-stats">
+          <article class="stat stat-featured">
+            <span>Total jobs</span><strong id="metricJobs">0</strong>
+            <small>All job records</small>
+          </article>
+          <article class="stat">
+            <span>Published jobs</span><strong id="metricPublished">0</strong>
+            <small>Visible to applicants</small>
+          </article>
+          <article class="stat">
+            <span>Applicants</span><strong id="metricApplicants">0</strong>
+            <small>Permanent CV profiles</small>
+          </article>
+          <article class="stat">
+            <span>Submitted applications</span>
+            <strong id="metricApplications">0</strong>
+            <small>Eligible submissions</small>
+          </article>
+        </div>
+
+        <article class="card">
+          <div class="card-heading">
+            <div>
+              <span class="page-kicker">Latest activity</span>
+              <h2>Recent applications</h2>
+            </div>
+            <a class="text-button" th:href="@{/admin/applications}">View all</a>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Candidate</th>
+                  <th>Job</th>
+                  <th>Tracking number</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recentApplicationRows"></tbody>
+            </table>
+          </div>
+        </article>
+      </main>
+    </div>
+    <script th:src="@{/js/admin.js(v=3)}"></script>
+  </body>
+</html>

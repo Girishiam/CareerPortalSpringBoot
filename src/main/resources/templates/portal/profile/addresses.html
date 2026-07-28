@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Addresses | Uttara Bank Career Portal</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+  </head>
+  <body class="admin-body" data-portal-page="addresses">
+    <header th:replace="~{portal/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{portal/fragments/sidebar :: sidebar('addresses')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Your CV</span>
+            <h1>Addresses</h1>
+            <p>Locations are verified against configured master data.</p>
+          </div>
+        </div>
+        <div class="form-grid address-grid">
+          <form class="card address-form" data-type="PRESENT">
+            <div class="card-heading">
+              <div>
+                <span class="address-tag">Current residence</span>
+                <h2>Present address</h2>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="field full">
+                <label>Address line *</label
+                ><textarea name="addressLine" required></textarea>
+              </div>
+              <div class="field">
+                <label>Division *</label
+                ><select name="divisionId" required></select>
+              </div>
+              <div class="field">
+                <label>District *</label
+                ><select name="districtId" required></select>
+              </div>
+              <div class="field">
+                <label>Upazila *</label
+                ><select name="upazilaId" required></select>
+              </div>
+              <div class="field">
+                <label>Postcode</label
+                ><input name="postcode" pattern="[0-9]{4,10}" />
+              </div>
+            </div>
+            <button class="btn btn-primary form-action" type="submit">
+              Save present address
+            </button>
+          </form>
+          <form class="card address-form" data-type="PERMANENT">
+            <div class="card-heading">
+              <div>
+                <span class="address-tag">Official residence</span>
+                <h2>Permanent address</h2>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="field full">
+                <label>Address line *</label
+                ><textarea name="addressLine" required></textarea>
+              </div>
+              <div class="field">
+                <label>Division *</label
+                ><select name="divisionId" required></select>
+              </div>
+              <div class="field">
+                <label>District *</label
+                ><select name="districtId" required></select>
+              </div>
+              <div class="field">
+                <label>Upazila *</label
+                ><select name="upazilaId" required></select>
+              </div>
+              <div class="field">
+                <label>Postcode</label
+                ><input name="postcode" pattern="[0-9]{4,10}" />
+              </div>
+            </div>
+            <button class="btn btn-primary form-action" type="submit">
+              Save permanent address
+            </button>
+          </form>
+        </div>
+      </main>
+    </div>
+    <script th:src="@{/js/portal.js(v=9)}"></script>
+  </body>
+</html>

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#007A3D" />
+
+    <title>Create account | Uttara Bank Career Portal</title>
+
+    <link
+      rel="icon"
+      th:href="@{/images/logo/uttara-bank-mark.png}"
+      href="/images/logo/uttara-bank-mark.png"
+    />
+    <link
+      rel="stylesheet"
+      th:href="@{/css/app.css(v=3)}"
+      href="/css/app.css?v=3"
+    />
+  </head>
+
+  <body>
+    <main class="auth-page">
+      <section class="auth-panel">
+        <a class="brand auth-brand" th:href="@{/}" href="/">
+          <img
+            class="brand-image"
+            th:src="@{/images/logo/uttara-bank-logo.png}"
+            src="/images/logo/uttara-bank-logo.png"
+            alt="Uttara Bank Career Portal"
+            width="263"
+            height="80"
+          />
+        </a>
+
+        <div class="auth-copy register-copy">
+          <span class="eyebrow">Applicant registration</span>
+
+          <h1>Create your career profile.</h1>
+          <p>
+            Register once to receive your permanent CV number and apply for
+            future opportunities.
+          </p>
+
+          <div id="alert" class="alert" role="alert"></div>
+
+          <form id="registerForm">
+            <div class="form-grid">
+              <div class="field full">
+                <label for="fullName">Full name</label>
+                <input
+                  id="fullName"
+                  name="fullName"
+                  type="text"
+                  maxlength="150"
+                  autocomplete="name"
+                  placeholder="Md. Rahim Ahmed"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="email">Email address</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  maxlength="254"
+                  autocomplete="email"
+                  placeholder="rahim@example.com"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="mobile">Mobile number</label>
+                <input
+                  id="mobile"
+                  name="mobile"
+                  type="tel"
+                  pattern="01[3-9][0-9]{8}"
+                  autocomplete="tel"
+                  placeholder="01712345678"
+                  required
+                />
+                <span class="hint"
+                  >Use an 11-digit Bangladeshi mobile number.</span
+                >
+              </div>
+
+              <div class="field full">
+                <div class="label-row">
+                  <label for="password">Create password</label>
+                  <span class="hint">12–72 characters</span>
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  minlength="12"
+                  maxlength="72"
+                  autocomplete="new-password"
+                  placeholder="Create a strong password"
+                  required
+                />
+              </div>
+            </div>
+
+            <button class="btn btn-primary form-action" type="submit">
+              Create applicant account
+              <span aria-hidden="true">→</span>
+            </button>
+          </form>
+
+          <div class="auth-divider">
+            <span>Already registered?</span>
+          </div>
+
+          <a
+            class="btn btn-secondary form-action"
+            th:href="@{/login}"
+            href="/login"
+          >
+            Sign in to your account
+          </a>
+
+          <p class="auth-note">
+            By registering, you confirm that the information you provide is
+            accurate.
+          </p>
+        </div>
+      </section>
+
+      <aside class="auth-art">
+        <div class="art-grid" aria-hidden="true"></div>
+
+        <div class="art-card">
+          <span class="eyebrow">Your permanent profile</span>
+
+          <h2>Ready for every<br />next step.</h2>
+
+          <p>
+            Keep one verified career profile while every submitted application
+            retains its own secure snapshot.
+          </p>
+
+          <div class="feature-list">
+            <div>
+              <span>01</span>
+              <p>
+                <strong>Register once</strong>
+                <small>Receive a permanent CV number</small>
+              </p>
+            </div>
+
+            <div>
+              <span>02</span>
+              <p>
+                <strong>Stay current</strong>
+                <small>Update your reusable profile</small>
+              </p>
+            </div>
+
+            <div>
+              <span>03</span>
+              <p>
+                <strong>Apply securely</strong>
+                <small>Each submission is preserved</small>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <p class="art-footer">Uttara Bank PLC · Career Portal</p>
+      </aside>
+    </main>
+
+    <script th:src="@{/js/auth.js(v=5)}" src="/js/auth.js?v=5"></script>
+  </body>
+</html>

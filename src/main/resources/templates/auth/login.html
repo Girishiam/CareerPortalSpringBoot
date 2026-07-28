@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#007A3D" />
+    <title>Sign in | Uttara Bank Career Portal</title>
+    <link
+      rel="icon"
+      th:href="@{/images/logo/uttara-bank-mark.png}"
+      href="/images/logo/uttara-bank-mark.png"
+    />
+    <link
+      rel="stylesheet"
+      th:href="@{/css/app.css(v=3)}"
+      href="/css/app.css?v=3"
+    />
+  </head>
+  <body>
+    <main class="auth-page">
+      <section class="auth-panel">
+        <a class="brand auth-brand" th:href="@{/}" href="/">
+          <img
+            class="brand-image"
+            th:src="@{/images/logo/uttara-bank-logo.png}"
+            src="/images/logo/uttara-bank-logo.png"
+            alt="Uttara Bank Career Portal"
+            width="263"
+            height="80"
+          />
+        </a>
+        <div class="auth-copy">
+          <span class="eyebrow">Applicant access</span>
+          <h1>Welcome back.</h1>
+          <p>Sign in to manage your career profile and applications.</p>
+          <div id="alert" class="alert" role="alert"></div>
+          <form
+            id="loginForm"
+            data-login-endpoint="/api/v1/auth/applicants/login"
+          >
+            <div class="form-grid">
+              <div class="field full">
+                <label for="login">Email, mobile or username</label>
+                <input
+                  id="login"
+                  name="login"
+                  autocomplete="username"
+                  required
+                  placeholder="rahim@example.com"
+                />
+              </div>
+              <div class="field full">
+                <div class="label-row">
+                  <label for="password">Password</label
+                  ><span class="hint">Minimum 12 characters</span>
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                  placeholder="Enter your password"
+                />
+              </div>
+            </div>
+            <button class="btn btn-primary form-action" type="submit">
+              Sign in to your account <span aria-hidden="true">→</span>
+            </button>
+          </form>
+          <div class="auth-divider"><span>New applicant?</span></div>
+          <a
+            class="btn btn-secondary form-action"
+            th:href="@{/register}"
+            href="/register"
+            >Create an applicant account</a
+          >
+          <p class="auth-note">
+            Bank administrator?
+            <a th:href="@{/admin/login}" href="/admin/login">Admin sign in</a>
+          </p>
+          <p class="auth-note">
+            Protected by encrypted access and secure applicant ownership
+            controls.
+          </p>
+        </div>
+      </section>
+      <aside class="auth-art">
+        <div class="art-grid" aria-hidden="true"></div>
+        <div class="art-card">
+          <span class="eyebrow">Build your future</span>
+          <h2>One profile.<br />Every opportunity.</h2>
+          <p>
+            Build your permanent CV once, apply confidently, and track each
+            opportunity from one secure workspace.
+          </p>
+          <div class="feature-list">
+            <div>
+              <span>01</span>
+              <p>
+                <strong>Permanent CV</strong
+                ><small>Your reusable career profile</small>
+              </p>
+            </div>
+            <div>
+              <span>02</span>
+              <p>
+                <strong>Verified applications</strong
+                ><small>Checked before submission</small>
+              </p>
+            </div>
+            <div>
+              <span>03</span>
+              <p>
+                <strong>Clear tracking</strong
+                ><small>One number per application</small>
+              </p>
+            </div>
+          </div>
+        </div>
+        <p class="art-footer">Uttara Bank PLC · Career Portal</p>
+      </aside>
+    </main>
+    <script th:src="@{/js/auth.js(v=5)}" src="/js/auth.js?v=5"></script>
+  </body>
+</html>

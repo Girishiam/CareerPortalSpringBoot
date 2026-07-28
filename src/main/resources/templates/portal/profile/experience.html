@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Experience | Uttara Bank Career Portal</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+  </head>
+  <body class="admin-body" data-portal-page="experience">
+    <header th:replace="~{portal/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{portal/fragments/sidebar :: sidebar('experience')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Employment history</span>
+            <h1>Experience</h1>
+            <p>Record relevant roles and dates.</p>
+          </div>
+          <button class="btn btn-primary" id="toggleExperienceForm">
+            Add experience
+          </button>
+        </div>
+        <form class="card form-card" id="experienceForm" hidden>
+          <div class="form-grid">
+            <div class="field">
+              <label>Employer *</label><input name="employerName" required />
+            </div>
+            <div class="field">
+              <label>Designation *</label><input name="designation" required />
+            </div>
+            <div class="field">
+              <label>Start date *</label
+              ><input name="startDate" type="date" required />
+            </div>
+            <div class="field">
+              <label>End date</label><input name="endDate" type="date" />
+            </div>
+            <div class="field checkbox-field full">
+              <label
+                ><input name="isCurrent" type="checkbox" /> I currently work
+                here</label
+              >
+            </div>
+          </div>
+          <div class="form-footer">
+            <span class="hint">Current roles cannot have an end date.</span
+            ><button class="btn btn-primary">Save experience</button>
+          </div>
+        </form>
+        <div class="card"><div class="list" id="experienceList"></div></div>
+      </main>
+    </div>
+    <script th:src="@{/js/portal.js(v=9)}"></script>
+  </body>
+</html>

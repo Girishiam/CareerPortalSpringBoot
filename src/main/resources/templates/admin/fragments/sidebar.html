@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <aside class="admin-sidebar" th:fragment="sidebar(activePage)">
+      <div class="sidebar-intro">
+        <span class="eyebrow">Admin console</span>
+        <p>Manage recruitment operations.</p>
+      </div>
+
+      <nav>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'dashboard'} ? ' active'"
+          th:href="@{/admin/dashboard}"
+          href="/admin/dashboard"
+        >
+          Dashboard
+        </a>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'jobs'} ? ' active'"
+          th:href="@{/admin/jobs}"
+          href="/admin/jobs"
+        >
+          Jobs
+        </a>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'applications'} ? ' active'"
+          th:href="@{/admin/applications}"
+          href="/admin/applications"
+        >
+          Applications
+        </a>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'users'} ? ' active'"
+          th:href="@{/admin/users}"
+          href="/admin/users"
+        >
+          Users
+        </a>
+      </nav>
+
+      <div class="sidebar-help">
+        <strong>Workflow protected</strong>
+        <p>Published jobs and submitted snapshots are immutable.</p>
+      </div>
+    </aside>
+  </body>
+</html>

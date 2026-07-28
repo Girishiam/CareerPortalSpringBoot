@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard | Uttara Bank Career Portal</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+  </head>
+  <body class="admin-body" data-portal-page="dashboard">
+    <header th:replace="~{portal/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{portal/fragments/sidebar :: sidebar('dashboard')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Applicant dashboard</span>
+            <h1>Welcome, <span id="welcomeName">Applicant</span>.</h1>
+            <p>Keep your career profile ready for new opportunities.</p>
+          </div>
+          <a class="btn btn-primary" th:href="@{/portal/jobs}">
+            Browse open positions
+          </a>
+        </div>
+        <div class="stats">
+          <article class="stat stat-featured">
+            <span>Permanent CV number</span>
+            <strong id="cvNumber">—</strong>
+            <small>Your applicant identity</small>
+          </article>
+          <article class="stat">
+            <span>Education records</span>
+            <strong id="educationCount">0</strong>
+            <small>Academic qualifications</small>
+          </article>
+          <article class="stat">
+            <span>Experience records</span>
+            <strong id="experienceCount">0</strong>
+            <small>Employment history</small>
+          </article>
+        </div>
+        <div class="dashboard-grid">
+          <article class="card readiness-card">
+            <span class="page-kicker">Profile readiness</span>
+            <h2>Build a submission-ready CV</h2>
+            <p>
+              Complete personal information, both addresses, education, and
+              required documents.
+            </p>
+            <a class="btn btn-primary" th:href="@{/portal/profile/personal}">
+              Continue profile
+            </a>
+          </article>
+          <article class="card">
+            <div class="card-heading">
+              <div>
+                <span class="page-kicker">Activity</span>
+                <h2>Recent applications</h2>
+              </div>
+              <a class="text-button" th:href="@{/portal/applications}">
+                View all
+              </a>
+            </div>
+            <div class="list" id="applicationList"></div>
+          </article>
+        </div>
+      </main>
+    </div>
+    <script th:src="@{/js/portal.js(v=9)}"></script>
+  </body>
+</html>

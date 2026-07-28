@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <header class="topbar" th:fragment="header">
+      <a class="brand" th:href="@{/portal/dashboard}" href="/portal/dashboard">
+        <img
+          th:src="@{/images/logo/uttara-bank-logo.png}"
+          src="/images/logo/uttara-bank-logo.png"
+          alt="Uttara Bank Career Portal"
+          width="263"
+          height="80"
+        />
+      </a>
+      <div class="user-menu">
+        <div class="user-summary">
+          <strong data-applicant-name>Applicant</strong>
+          <span class="hint" data-applicant-cv>Loading profile...</span>
+        </div>
+        <div class="avatar" data-applicant-avatar aria-hidden="true">A</div>
+        <button class="btn btn-secondary" id="applicantLogout" type="button">
+          Sign out
+        </button>
+      </div>
+    </header>
+  </body>
+</html>

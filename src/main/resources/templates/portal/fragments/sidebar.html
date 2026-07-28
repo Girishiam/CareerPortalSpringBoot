@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <aside
+      class="admin-sidebar applicant-sidebar"
+      th:fragment="sidebar(activePage)"
+    >
+      <div class="sidebar-intro">
+        <span class="eyebrow">Applicant area</span>
+        <p>Manage your CV and applications.</p>
+      </div>
+      <nav>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'dashboard'} ? ' active'"
+          th:href="@{/portal/dashboard}"
+        >
+          Dashboard
+        </a>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'personal'} ? ' active'"
+          th:href="@{/portal/profile/personal}"
+        >
+          Personal information
+        </a>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'addresses'} ? ' active'"
+          th:href="@{/portal/profile/addresses}"
+        >
+          Addresses
+        </a>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'education'} ? ' active'"
+          th:href="@{/portal/profile/education}"
+        >
+          Education
+        </a>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'experience'} ? ' active'"
+          th:href="@{/portal/profile/experience}"
+        >
+          Experience
+        </a>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'documents'} ? ' active'"
+          th:href="@{/portal/profile/documents}"
+        >
+          Documents
+        </a>
+        <div class="nav-label">Applications</div>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'jobs'} ? ' active'"
+          th:href="@{/portal/jobs}"
+        >
+          Open positions
+        </a>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'applications'} ? ' active'"
+          th:href="@{/portal/applications}"
+        >
+          My applications
+        </a>
+      </nav>
+      <div class="sidebar-help">
+        <strong>Keep your CV ready</strong>
+        <p>Complete each section before submitting an application.</p>
+        <a class="btn btn-secondary" th:href="@{/portal/profile/personal}">
+          Review profile
+        </a>
+      </div>
+    </aside>
+  </body>
+</html>

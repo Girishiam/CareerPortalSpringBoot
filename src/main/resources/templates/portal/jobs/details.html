@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Position Details | Uttara Bank Career Portal</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+  </head>
+  <body class="admin-body" data-portal-page="job-details">
+    <header th:replace="~{portal/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{portal/fragments/sidebar :: sidebar('jobs')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <a class="back-link" th:href="@{/portal/jobs}"
+          >← Back to open positions</a
+        >
+        <div class="page-head">
+          <div>
+            <span class="page-kicker" id="jobCode">Position</span>
+            <h1 id="jobTitle">Loading position...</h1>
+            <p id="jobSummary">Please wait while the job details load.</p>
+          </div>
+          <button
+            class="btn btn-primary"
+            id="applyForJob"
+            type="button"
+            disabled
+          >
+            Start application
+          </button>
+        </div>
+        <section class="card details-grid" id="jobFacts"></section>
+        <div class="content-grid">
+          <article class="card">
+            <span class="page-kicker">About the role</span>
+            <h2>Job description</h2>
+            <div class="prose" id="jobDescription"></div>
+          </article>
+          <article class="card">
+            <span class="page-kicker">What you will do</span>
+            <h2>Responsibilities</h2>
+            <div class="prose" id="jobResponsibilities"></div>
+          </article>
+        </div>
+        <section
+          class="card application-callout"
+          id="draftPanel"
+          hidden
+        ></section>
+      </main>
+    </div>
+    <script th:src="@{/js/portal.js(v=9)}"></script>
+  </body>
+</html>

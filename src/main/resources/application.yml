@@ -1,0 +1,50 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: career-portal
+  datasource:
+    # Local SQL Server installations commonly use a self-signed certificate.
+    # Production must set DB_TRUST_CERT=false and install a CA-signed SQL Server
+    # certificate (or import its issuing CA into the JVM trust store).
+    url: jdbc:sqlserver://${DB_HOST:localhost}:${DB_PORT:1433};databaseName=${DB_NAME:CareerPortal};encrypt=${DB_ENCRYPT:true};trustServerCertificate=${DB_TRUST_CERT:true}
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+      minimum-idle: ${DB_MIN_IDLE:2}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT_MS:10000}
+      validation-timeout: ${DB_VALIDATION_TIMEOUT_MS:5000}
+      max-lifetime: ${DB_MAX_LIFETIME_MS:300000}
+      keepalive-time: ${DB_KEEPALIVE_TIME_MS:60000}
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: ${FLYWAY_BASELINE_ON_MIGRATE:true}
+    baseline-version: ${FLYWAY_BASELINE_VERSION:8}
+
+server:
+  error:
+    include-message: never
+
+career-portal:
+  admin-bootstrap:
+    enabled: ${ADMIN_BOOTSTRAP_ENABLED:false}
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
+  jwt:
+    issuer: ${JWT_ISSUER:uttarabank-careerportal}
+    secret: ${JWT_SECRET:change-this-development-secret-to-at-least-32-bytes}
+    access-token-minutes: ${JWT_ACCESS_MINUTES:15}
+  files:
+    root: ${FILE_STORAGE_ROOT:./data/files}
+    max-bytes: 5242880
+    photo-min-width: 200
+    photo-min-height: 200
+    photo-max-width: 1000
+    photo-max-height: 1000

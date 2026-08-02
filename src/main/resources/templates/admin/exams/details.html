@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Exam Operations | Career Portal Administration</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=14)}" />
+  </head>
+  <body class="admin-body" data-admin-page="exam-details">
+    <header th:replace="~{admin/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside th:replace="~{admin/fragments/sidebar :: sidebar('exams')}"></aside>
+      <main class="admin-main">
+        <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+        <a class="back-link" href="/admin/exams">← Back to exams</a>
+        <div class="page-head"><div><span class="page-kicker" id="examType">Exam</span>
+          <h1 id="examTitle">Loading exam…</h1><p id="examJob"></p></div>
+          <span class="badge" id="examStatus">DRAFT</span></div>
+        <section class="card details-grid" id="examFacts"></section>
+        <div class="content-grid">
+          <section class="card">
+            <h2>1. Select candidates</h2>
+            <p class="hint">Only submitted applications for this position appear. Written-stage selection enforces a passed MCQ result when a screening exam exists.</p>
+            <div class="button-row"><button class="btn btn-secondary" id="selectAllCandidates">Select all</button>
+              <button class="btn btn-primary" id="addCandidates">Add selected</button></div>
+            <div class="candidate-picker" id="candidatePicker"></div>
+          </section>
+          <section class="card">
+            <h2>2. Centers and rooms</h2>
+            <form id="centerForm" class="form-grid compact-form">
+              <div class="field"><label>Center code</label><input name="centerCode" required /></div>
+              <div class="field"><label>Center name</label><input name="centerName" required /></div>
+              <div class="field field-span-2"><label>Address</label><input name="address" required /></div>
+              <div class="field"><label>Contact phone</label><input name="contactPhone" /></div>
+              <div><button class="btn btn-secondary" type="submit">Add center</button></div>
+            </form>
+            <div id="centerList" class="list"></div>
+            <form id="roomForm" class="form-grid compact-form">
+              <div class="field"><label>Center</label><select name="centerId" id="roomCenter" required></select></div>
+              <div class="field"><label>Room number</label><input name="roomNumber" required /></div>
+              <div class="field"><label>Floor</label><input name="floorName" /></div>
+              <div class="field"><label>Capacity</label><input name="capacity" type="number" min="1" required /></div>
+              <div><button class="btn btn-secondary" type="submit">Add room</button></div>
+            </form>
+          </section>
+        </div>
+        <section class="card">
+          <div class="page-head compact-head"><div><h2>3. Roll and seat plan</h2><p>Rolls are random six-digit values and unique throughout the system.</p></div>
+            <div class="button-row"><button class="btn btn-secondary" id="assignRolls">Assign missing rolls</button>
+              <button class="btn btn-secondary" id="assignSeats">Auto-assign seats</button></div></div>
+          <div class="table-wrap"><table class="data-table"><thead><tr>
+            <th>Candidate</th><th>Tracking</th><th>Roll</th><th>Center</th><th>Room / seat</th><th>Result</th><th>Card</th>
+          </tr></thead><tbody id="examCandidateRows"></tbody></table></div>
+        </section>
+        <section class="card publish-panel"><div><h2>4. Generate and publish</h2>
+          <p>Generation locks the candidate and seat plan. Publishing makes cards visible and queues one notification per candidate.</p></div>
+          <div class="button-row"><button class="btn btn-secondary" id="generateCards">Generate admit cards</button>
+            <button class="btn btn-primary" id="publishCards">Publish &amp; notify</button></div>
+        </section>
+      </main>
+    </div>
+    <script th:src="@{/js/admin.js(v=17)}"></script>
+  </body>
+</html>

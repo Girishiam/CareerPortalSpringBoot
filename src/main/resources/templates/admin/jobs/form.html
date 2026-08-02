@@ -3,9 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Create job | Career Portal Administration</title>
+    <title id="jobFormDocumentTitle">Create job | Career Portal Administration</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=6)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=14)}" />
   </head>
   <body class="admin-body" data-admin-page="job-form">
     <header th:replace="~{admin/fragments/header :: header}"></header>
@@ -16,8 +16,8 @@
         <div class="page-head">
           <div>
             <span class="page-kicker">Job management</span>
-            <h1>Create a job posting</h1>
-            <p>The backend assigns creator, state, and workflow timestamps.</p>
+            <h1 id="jobFormTitle">Create a job posting</h1>
+            <p id="jobFormDescription">The backend assigns creator, state, and workflow timestamps.</p>
           </div>
           <a class="btn btn-secondary" th:href="@{/admin/jobs}">
             Back to jobs
@@ -118,7 +118,7 @@
           </div>
           <div id="educationRequirements" class="requirements-panel" hidden>
             <div class="requirement-row requirement-labels" aria-hidden="true">
-              <span>Education level</span><span>Minimum GPA/division</span><span>Result type</span><span></span>
+              <span>Education level</span><span>Matching</span><span>Minimum GPA/division</span><span>Result type</span><span></span>
             </div>
             <div id="educationRequirementRows"></div>
             <button class="btn btn-secondary" id="addEducationRequirement" type="button">
@@ -152,6 +152,20 @@
           </div>
 
           <div class="form-section-head">
+            <span class="page-kicker">Application policy</span>
+            <h2>Multiple position applications</h2>
+          </div>
+          <div class="requirements-panel">
+            <label class="check-option">
+              <input name="multipleApplicationRestricted" type="checkbox" />
+              <span>
+                <strong>Do not allow multiple position applications</strong><br />
+                When checked, an applicant who has already submitted an application cannot apply to another position.
+              </span>
+            </label>
+          </div>
+
+          <div class="form-section-head">
             <span class="page-kicker">Application flags</span>
             <h2>Required declarations and information</h2>
           </div>
@@ -160,7 +174,6 @@
             <label class="flag-card"><input name="mobileRequired" type="checkbox" checked /><span><strong>Mobile</strong><small>Require a mobile contact</small></span></label>
             <label class="flag-card"><input name="emailRequired" type="checkbox" checked /><span><strong>Email</strong><small>Require an email contact</small></span></label>
             <label class="flag-card"><input name="relativeDeclarationRequired" type="checkbox" /><span><strong>Relative in UBL</strong><small>Require a relative declaration</small></span></label>
-            <label class="flag-card"><input name="allowOtherPostApplication" type="checkbox" checked /><span><strong>Other-post applications</strong><small>Allow applying to another post</small></span></label>
             <label class="flag-card"><input name="coverLetterCvRequired" type="checkbox" /><span><strong>Cover letter &amp; CV</strong><small>Require both with the application</small></span></label>
           </div>
 
@@ -195,17 +208,17 @@
             </div>
             <div class="field full">
               <label>Circular letter</label>
-              <input name="circularLetter" type="file" accept=".pdf,.doc,.docx" />
-              <span class="hint">PDF, DOC, or DOCX. The file name is stored with this posting.</span>
+              <input name="circularLetter" type="file" accept=".pdf,application/pdf" />
+              <span class="hint">PDF only, maximum 5 MB. Applicants can view and download it.</span>
             </div>
           </div>
           <div class="form-footer">
-            <span class="hint">The new job starts in DRAFT state.</span>
-            <button class="btn btn-primary" type="submit">Create job</button>
+            <span class="hint" id="jobFormHint">The new job starts in DRAFT state.</span>
+            <button class="btn btn-primary" id="jobFormSubmit" type="submit">Create job</button>
           </div>
         </form>
       </main>
     </div>
-    <script th:src="@{/js/admin.js(v=7)}"></script>
+    <script th:src="@{/js/admin.js(v=19)}"></script>
   </body>
 </html>

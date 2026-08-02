@@ -47,6 +47,13 @@
         </a>
         <a
           class="nav-link"
+          th:classappend="${activePage == 'additional'} ? ' active'"
+          th:href="@{/portal/profile/additional}"
+        >
+          Additional information
+        </a>
+        <a
+          class="nav-link"
           th:classappend="${activePage == 'documents'} ? ' active'"
           th:href="@{/portal/profile/documents}"
         >
@@ -66,6 +73,13 @@
           th:href="@{/portal/applications}"
         >
           My applications
+        </a>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'admit-cards'} ? ' active'"
+          th:href="@{/portal/admit-cards}"
+        >
+          Admit cards
         </a>
       </nav>
       <div class="sidebar-help">

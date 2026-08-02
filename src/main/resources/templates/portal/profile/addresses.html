@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Addresses | Uttara Bank Career Portal</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
   </head>
   <body class="admin-body" data-portal-page="addresses">
     <header th:replace="~{portal/fragments/header :: header}"></header>
@@ -52,9 +52,6 @@
                 ><input name="postcode" pattern="[0-9]{4,10}" />
               </div>
             </div>
-            <button class="btn btn-primary form-action" type="submit">
-              Save present address
-            </button>
           </form>
           <form class="card address-form" data-type="PERMANENT">
             <div class="card-heading">
@@ -62,6 +59,10 @@
                 <span class="address-tag">Official residence</span>
                 <h2>Permanent address</h2>
               </div>
+              <label class="same-address-option">
+                <input id="sameAsPresent" type="checkbox" />
+                Same as present address
+              </label>
             </div>
             <div class="form-grid">
               <div class="field full">
@@ -85,13 +86,17 @@
                 ><input name="postcode" pattern="[0-9]{4,10}" />
               </div>
             </div>
-            <button class="btn btn-primary form-action" type="submit">
-              Save permanent address
-            </button>
           </form>
         </div>
+        <button
+          class="btn btn-primary form-action"
+          id="saveAddresses"
+          type="button"
+        >
+          Save addresses
+        </button>
       </main>
     </div>
-    <script th:src="@{/js/portal.js(v=9)}"></script>
+    <script th:src="@{/js/portal.js(v=14)}"></script>
   </body>
 </html>

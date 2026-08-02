@@ -29,9 +29,13 @@ class PageControllerTests {
     assertEquals("admin/dashboard", controller.adminDashboard());
     assertEquals("admin/jobs/list", controller.adminJobs());
     assertEquals("admin/jobs/form", controller.adminJobForm());
+    assertEquals("admin/jobs/form", controller.adminJobEditForm());
     assertEquals("admin/jobs/details", controller.adminJobDetails());
     assertEquals("admin/applications/list", controller.adminApplications());
     assertEquals("admin/applications/details", controller.adminApplicationDetails());
+    assertEquals("admin/admit-cards/list", controller.adminAdmitCards());
+    assertEquals("admin/admit-cards/details", controller.adminAdmitCard());
+    assertEquals("admin/demo-admit-cards/list", controller.adminDemoAdmitCards());
     assertEquals("admin/users/list", controller.adminUsers());
   }
 }

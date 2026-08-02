@@ -34,6 +34,30 @@
         </a>
         <a
           class="nav-link"
+          th:classappend="${activePage == 'exams'} ? ' active'"
+          th:href="@{/admin/exams}"
+          href="/admin/exams"
+        >
+          Exams &amp; seat plans
+        </a>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'admit-cards'} ? ' active'"
+          th:href="@{/admin/admit-cards}"
+          href="/admin/admit-cards"
+        >
+          Admit cards
+        </a>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'demo-admit-cards'} ? ' active'"
+          th:href="@{/admin/demo-admit-cards}"
+          href="/admin/demo-admit-cards"
+        >
+          30K PDF demo
+        </a>
+        <a
+          class="nav-link"
           th:classappend="${activePage == 'users'} ? ' active'"
           th:href="@{/admin/users}"
           href="/admin/users"

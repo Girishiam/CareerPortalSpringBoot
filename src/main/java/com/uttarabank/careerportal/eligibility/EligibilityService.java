@@ -15,15 +15,17 @@ public class EligibilityService {
 
   public Result evaluate(long applicationId, long jobId, long applicantId, int rulesVersion) {
     List<String> failures = new ArrayList<>();
-    var profile =
-        jdbc.queryForMap(
-            "SELECT date_of_birth FROM dbo.applicant_profile WHERE applicant_id=?", applicantId);
-    LocalDate dob = (LocalDate) profile.get("date_of_birth");
+    LocalDate dob =
+        jdbc.query(
+            "SELECT date_of_birth FROM dbo.applicant_profile WHERE applicant_id=?",
+            rs -> rs.next() && rs.getDate(1) != null ? rs.getDate(1).toLocalDate() : null,
+            applicantId);
     LocalDate ref =
-        jdbc.queryForObject(
+        jdbc.query(
             "SELECT age_reference_date FROM dbo.job_posting WHERE job_id=?",
-            LocalDate.class,
+            rs -> rs.next() && rs.getDate(1) != null ? rs.getDate(1).toLocalDate() : null,
             jobId);
+    if (ref == null) failures.add("AGE_REFERENCE_DATE_REQUIRED");
     Integer max =
         jdbc.query(
             "SELECT maximum_age FROM dbo.job_age_policy WHERE job_id=? AND rules_version=? AND applicant_category='GENERAL'",
@@ -31,11 +33,53 @@ public class EligibilityService {
             jobId,
             rulesVersion);
     if (dob == null) failures.add("DATE_OF_BIRTH_REQUIRED");
-    else if (max != null && Period.between(dob, ref).getYears() > max)
+    else if (ref != null && max != null && Period.between(dob, ref).getYears() > max)
       failures.add("AGE_LIMIT_EXCEEDED");
     Integer missingEducation =
         jdbc.queryForObject(
-            "SELECT COUNT(*) FROM dbo.job_education_requirement r WHERE r.job_id=? AND r.rules_version=? AND NOT EXISTS(SELECT 1 FROM dbo.applicant_education e WHERE e.applicant_id=? AND e.qualification_id=r.qualification_id AND (r.minimum_result IS NULL OR e.result_value>=r.minimum_result))",
+            """
+            SELECT COUNT(*)
+            FROM dbo.job_education_requirement requirement
+            JOIN dbo.qualification required_qualification
+              ON required_qualification.qualification_id=requirement.qualification_id
+            WHERE requirement.job_id=?
+              AND requirement.rules_version=?
+              AND NOT EXISTS (
+                SELECT 1
+                FROM dbo.applicant_education education
+                JOIN dbo.qualification applicant_qualification
+                  ON applicant_qualification.qualification_id=education.qualification_id
+                WHERE education.applicant_id=?
+                  AND (
+                    (requirement.match_mode='EXACT'
+                      AND education.qualification_id=requirement.qualification_id)
+                    OR (requirement.match_mode='EQUIVALENT_LEVEL'
+                      AND applicant_qualification.level_rank=required_qualification.level_rank
+                      AND required_qualification.level_rank>0)
+                    OR (requirement.match_mode='MINIMUM_LEVEL'
+                      AND applicant_qualification.level_rank>=required_qualification.level_rank
+                      AND required_qualification.level_rank>0)
+                  )
+                  AND (
+                    requirement.minimum_result IS NULL
+                    OR (
+                      requirement.result_type='GPA'
+                      AND education.result_type IN ('GPA','CGPA')
+                      AND education.result_value>=requirement.minimum_result
+                    )
+                    OR (
+                      requirement.result_type='DIVISION'
+                      AND education.result_type IN ('DIVISION','CLASS')
+                      AND CASE
+                        WHEN UPPER(education.result_grade) IN ('FIRST','1ST','FIRST DIVISION','FIRST CLASS') THEN 1
+                        WHEN UPPER(education.result_grade) IN ('SECOND','2ND','SECOND DIVISION','SECOND CLASS') THEN 2
+                        WHEN UPPER(education.result_grade) IN ('THIRD','3RD','THIRD DIVISION','THIRD CLASS') THEN 3
+                        ELSE 99
+                      END<=requirement.minimum_result
+                    )
+                  )
+              )
+            """,
             Integer.class,
             jobId,
             rulesVersion,

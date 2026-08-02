@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,6 +44,10 @@ public class GlobalExceptionHandler {
   ResponseEntity<ApiError> conflict(
       DataIntegrityViolationException ex, HttpServletRequest request) {
     String details = Optional.ofNullable(ex.getMostSpecificCause().getMessage()).orElse("");
+    log.warn(
+        "Data integrity conflict. correlationId={} details={}",
+        request.getAttribute(CorrelationIdFilter.ATTRIBUTE),
+        details);
 
     if (details.contains("uq_user_email") || details.contains("uq_user_mobile")) {
       return response(
@@ -62,12 +67,54 @@ public class GlobalExceptionHandler {
           request);
     }
 
+    if (details.contains("uq_applicant_normalized_nid")
+        || details.contains("uq_applicant_normalized_passport")) {
+      return response(
+          HttpStatus.CONFLICT,
+          "IDENTITY_ALREADY_REGISTERED",
+          "This NID or passport number is already registered.",
+          List.of(),
+          request);
+    }
+
+    if (details.contains("uq_job_applicant")) {
+      return response(
+          HttpStatus.CONFLICT,
+          "APPLICATION_ALREADY_EXISTS",
+          "You already have an application for this position.",
+          List.of(),
+          request);
+    }
+
+    if (details.contains("ck_job_window")) {
+      return response(
+          HttpStatus.BAD_REQUEST,
+          "INVALID_APPLICATION_WINDOW",
+          "Application end must be after the application start.",
+          List.of(),
+          request);
+    }
+
     return response(
         HttpStatus.CONFLICT,
         "RESOURCE_CONFLICT",
         "The request conflicts with an existing record.",
         List.of(),
         request);
+  }
+
+  @ExceptionHandler(HttpMessageNotWritableException.class)
+  void responseWriteFailure(HttpMessageNotWritableException ex, HttpServletRequest request) {
+    if (isClientAbort(ex)) {
+      log.debug(
+          "Client disconnected before the API response completed. correlationId={}",
+          request.getAttribute(CorrelationIdFilter.ATTRIBUTE));
+      return;
+    }
+    log.error(
+        "API response could not be serialized. correlationId={}",
+        request.getAttribute(CorrelationIdFilter.ATTRIBUTE),
+        ex);
   }
 
   @ExceptionHandler(Exception.class)
@@ -123,6 +170,19 @@ public class GlobalExceptionHandler {
     for (Throwable current = value; current != null; current = current.getCause())
       if (current instanceof SQLException sql) return sql;
     return null;
+  }
+
+  private boolean isClientAbort(Throwable value) {
+    for (Throwable current = value; current != null; current = current.getCause()) {
+      String type = current.getClass().getName();
+      String message = Objects.toString(current.getMessage(), "").toLowerCase(Locale.ROOT);
+      if (type.endsWith("ClientAbortException")
+          || type.endsWith("AsyncRequestNotUsableException")
+          || message.contains("connection was aborted")
+          || message.contains("broken pipe")
+          || message.contains("connection reset")) return true;
+    }
+    return false;
   }
 
   private ResponseEntity<ApiError> response(

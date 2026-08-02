@@ -1,9 +1,12 @@
 package com.uttarabank.careerportal.application;
 
 import com.uttarabank.careerportal.applicant.ApplicantService;
+import com.uttarabank.careerportal.applicant.CvService;
 import com.uttarabank.careerportal.common.ApiException;
 import com.uttarabank.careerportal.eligibility.EligibilityService;
+import java.security.SecureRandom;
 import java.sql.*;
+import java.time.Instant;
 import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.*;
@@ -13,15 +16,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ApplicationService {
+  private static final SecureRandom TRACKING_RANDOM = new SecureRandom();
   private final JdbcTemplate jdbc;
   private final ApplicantService applicants;
   private final EligibilityService eligibility;
+  private final CvService cv;
 
   public ApplicationService(
-      JdbcTemplate jdbc, ApplicantService applicants, EligibilityService eligibility) {
+      JdbcTemplate jdbc,
+      ApplicantService applicants,
+      EligibilityService eligibility,
+      CvService cv) {
     this.jdbc = jdbc;
     this.applicants = applicants;
     this.eligibility = eligibility;
+    this.cv = cv;
   }
 
   public List<Map<String, Object>> applications() {
@@ -91,36 +100,75 @@ public class ApplicationService {
   @Transactional
   public ApplicationController.DraftResponse draft(long jobId) {
     long applicantId = applicants.applicantId();
+    cv.requireComplete(applicantId);
     var jobs =
         jdbc.queryForList(
-            "SELECT rules_version FROM dbo.job_posting WHERE job_id=? AND status='PUBLISHED' AND SYSUTCDATETIME()>=application_start_at AND SYSUTCDATETIME()<application_end_at",
+            "SELECT status,rules_version,multiple_application_restricted,application_start_at,application_end_at FROM dbo.job_posting WHERE job_id=?",
             jobId);
     if (jobs.isEmpty())
+      throw new ApiException(HttpStatus.NOT_FOUND, "JOB_NOT_FOUND", "Job not found.");
+    Map<String, Object> job = jobs.getFirst();
+    if (!"PUBLISHED".equals(job.get("status")))
       throw new ApiException(
           HttpStatus.CONFLICT,
           "JOB_NOT_ACCEPTING_APPLICATIONS",
-          "Job is not accepting applications.");
-    Integer limitExceeded =
+          "This job is not published.");
+    Instant now = Instant.now();
+    Instant startsAt = ((Timestamp) job.get("application_start_at")).toInstant();
+    Instant endsAt = ((Timestamp) job.get("application_end_at")).toInstant();
+    if (now.isBefore(startsAt))
+      throw new ApiException(
+          HttpStatus.CONFLICT,
+          "APPLICATION_NOT_OPEN",
+          "Applications have not opened yet.");
+    if (!now.isBefore(endsAt))
+      throw new ApiException(
+          HttpStatus.CONFLICT,
+          "APPLICATION_CLOSED",
+          "The application deadline has passed.");
+    Integer otherPostConflict =
         jdbc.queryForObject(
-            "SELECT CASE WHEN c.circular_id IS NULL THEN 0 WHEN (SELECT COUNT(*) FROM dbo.job_application a JOIN dbo.job_posting x ON x.job_id=a.job_id WHERE a.applicant_id=? AND x.circular_id=c.circular_id)>=p.max_applications_per_applicant THEN 1 ELSE 0 END FROM dbo.job_posting c LEFT JOIN dbo.circular_application_policy p ON p.circular_id=c.circular_id WHERE c.job_id=?",
+            """
+            SELECT COUNT(*)
+            FROM dbo.job_application application
+            JOIN dbo.job_posting existing_job ON existing_job.job_id=application.job_id
+            WHERE application.applicant_id=?
+              AND application.job_id<>?
+              AND application.status='SUBMITTED'
+              AND (
+                existing_job.multiple_application_restricted=1
+                OR ?=1
+              )
+            """,
             Integer.class,
             applicantId,
-            jobId);
+            jobId,
+            Boolean.TRUE.equals(job.get("multiple_application_restricted"))
+                || Objects.equals(job.get("multiple_application_restricted"), 1)
+                ? 1
+                : 0);
+    if (otherPostConflict != null && otherPostConflict > 0)
+      throw new ApiException(
+          HttpStatus.CONFLICT,
+          "MULTIPLE_POST_APPLICATION_NOT_ALLOWED",
+          "Multiple position applications are not allowed for this job.");
     var existing =
         jdbc.queryForList(
             "SELECT application_id,status FROM dbo.job_application WHERE job_id=? AND applicant_id=?",
             jobId,
             applicantId);
     long id;
-    if (!existing.isEmpty()) id = ((Number) existing.getFirst().get("application_id")).longValue();
-    else {
-      if (limitExceeded != null && limitExceeded == 1)
+    if (!existing.isEmpty()) {
+      Map<String, Object> existingApplication = existing.getFirst();
+      if ("SUBMITTED".equals(existingApplication.get("status")))
         throw new ApiException(
             HttpStatus.CONFLICT,
-            "CIRCULAR_APPLICATION_LIMIT_REACHED",
-            "Circular application limit reached.");
+            "APPLICATION_ALREADY_SUBMITTED",
+            "You have already submitted an application for this position.");
+      id = ((Number) existingApplication.get("application_id")).longValue();
+    } else {
       var keys = new GeneratedKeyHolder();
-      int version = ((Number) jobs.getFirst().get("rules_version")).intValue();
+      int version = ((Number) job.get("rules_version")).intValue();
       jdbc.update(
           c -> {
             var p =
@@ -172,9 +220,18 @@ public class ApplicationService {
           "APPLICANT_INELIGIBLE",
           String.join(", ", result.failures()));
     snapshot(applicationId, applicantId);
+    String trackingNumber = allocateTrackingNumber();
+    String statusColumn = writableStatusColumn();
+    jdbc.update(
+        "UPDATE dbo.job_application SET "
+            + statusColumn
+            + "='SUBMITTED',tracking_number=?,eligibility_status='ELIGIBLE',submitted_at=SYSUTCDATETIME(),version=version+1 WHERE application_id=? AND applicant_id=? AND status='DRAFT'",
+        trackingNumber,
+        applicationId,
+        applicantId);
     var response =
         jdbc.queryForObject(
-            "EXEC dbo.usp_SubmitJobApplication @ApplicationId=?,@ApplicantId=?",
+            "SELECT application_id,tracking_number,status,eligibility_status,submitted_at FROM dbo.job_application WHERE application_id=? AND applicant_id=?",
             (rs, n) ->
                 new ApplicationController.SubmitResponse(
                     rs.getLong("application_id"),
@@ -192,32 +249,47 @@ public class ApplicationService {
   }
 
   private List<String> missing(long id) {
-    List<String> m = new ArrayList<>();
-    Integer p =
+    return cv.missing(id).stream().map(CvService.MissingField::key).toList();
+  }
+
+  private String writableStatusColumn() {
+    Boolean statusIsComputed =
         jdbc.queryForObject(
-            "SELECT COUNT(*) FROM dbo.applicant_profile WHERE applicant_id=? AND date_of_birth IS NOT NULL AND father_name IS NOT NULL AND mother_name IS NOT NULL",
-            Integer.class,
-            id);
-    if (p == 0) m.add("PROFILE");
-    for (String type : List.of("PRESENT", "PERMANENT")) {
-      Integer n =
-          jdbc.queryForObject(
-              "SELECT COUNT(*) FROM dbo.applicant_address WHERE applicant_id=? AND address_type=?",
-              Integer.class,
-              id,
-              type);
-      if (n == 0) m.add(type + "_ADDRESS");
+            """
+            SELECT CONVERT(BIT, is_computed)
+              FROM sys.columns
+             WHERE object_id=OBJECT_ID('dbo.job_application')
+               AND name='status'
+            """,
+            Boolean.class);
+    return Boolean.TRUE.equals(statusIsComputed) ? "application_status" : "status";
+  }
+
+  private String allocateTrackingNumber() {
+    for (int attempt = 0; attempt < 25; attempt++) {
+      String candidate = Integer.toString(10_000_000 + TRACKING_RANDOM.nextInt(90_000_000));
+      List<String> existing =
+          jdbc.queryForList(
+              "SELECT tracking_number FROM dbo.job_application WITH(UPDLOCK,HOLDLOCK) WHERE tracking_number=?",
+              String.class,
+              candidate);
+      if (existing.isEmpty()) return candidate;
     }
-    Integer e =
-        jdbc.queryForObject(
-            "SELECT COUNT(*) FROM dbo.applicant_education WHERE applicant_id=?", Integer.class, id);
-    if (e == 0) m.add("EDUCATION");
-    return m;
+    throw new IllegalStateException("Could not allocate a unique tracking number.");
   }
 
   private void snapshot(long app, long applicant) {
     jdbc.update(
-        "INSERT dbo.application_profile_snapshot SELECT ?,cv_number,full_name,father_name,mother_name,date_of_birth,gender,marital_status,nationality,nid_number FROM dbo.applicant_profile WHERE applicant_id=?",
+        """
+        INSERT dbo.application_profile_snapshot(
+          application_id,cv_number,full_name,father_name,mother_name,
+          date_of_birth,gender,marital_status,nationality,nid_number
+        )
+        SELECT ?,cv_number,full_name,father_name,mother_name,
+               date_of_birth,gender,marital_status,nationality,nid_number
+          FROM dbo.applicant_profile
+         WHERE applicant_id=?
+        """,
         app,
         applicant);
     jdbc.update(

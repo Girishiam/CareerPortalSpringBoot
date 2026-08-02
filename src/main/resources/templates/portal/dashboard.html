@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dashboard | Uttara Bank Career Portal</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
   </head>
   <body class="admin-body" data-portal-page="dashboard">
     <header th:replace="~{portal/fragments/header :: header}"></header>
@@ -21,7 +21,7 @@
             <h1>Welcome, <span id="welcomeName">Applicant</span>.</h1>
             <p>Keep your career profile ready for new opportunities.</p>
           </div>
-          <a class="btn btn-primary" th:href="@{/portal/jobs}">
+          <a class="btn btn-primary" id="browseJobsButton" th:href="@{/portal/jobs}">
             Browse open positions
           </a>
         </div>
@@ -45,14 +45,9 @@
         <div class="dashboard-grid">
           <article class="card readiness-card">
             <span class="page-kicker">Profile readiness</span>
-            <h2>Build a submission-ready CV</h2>
-            <p>
-              Complete personal information, both addresses, education, and
-              required documents.
-            </p>
-            <a class="btn btn-primary" th:href="@{/portal/profile/personal}">
-              Continue profile
-            </a>
+            <h2>Your CV status</h2>
+            <div id="cvReadiness"></div>
+            <div class="missing-fields" id="missingFieldList"></div>
           </article>
           <article class="card">
             <div class="card-heading">
@@ -67,8 +62,42 @@
             <div class="list" id="applicationList"></div>
           </article>
         </div>
+
+        <section class="card cv-sheet">
+          <div class="card-heading">
+            <div>
+              <span class="page-kicker">Curriculum vitae</span>
+              <h2>Your complete CV</h2>
+              <p>Empty optional information is marked as not filled up.</p>
+            </div>
+          </div>
+          <div class="cv-identity">
+            <div class="cv-image-box cv-photo-box">
+              <img id="cvPhoto" alt="Profile photo" hidden />
+              <span id="cvPhotoMissing" class="not-filled">Photo not filled up</span>
+            </div>
+            <div>
+              <h3>Personal information</h3>
+              <div class="details-grid" id="cvPersonal"></div>
+            </div>
+          </div>
+          <div class="cv-section"><h3>Addresses</h3><div class="cv-entries" id="cvAddresses"></div></div>
+          <div class="cv-section"><h3>Education</h3><div class="cv-entries" id="cvEducations"></div></div>
+          <div class="cv-section"><h3>Experience</h3><div class="cv-entries" id="cvExperiences"></div></div>
+          <div class="cv-section"><h3>Professional training</h3><div class="cv-entries" id="cvTrainings"></div></div>
+          <div class="cv-section"><h3>Language proficiency</h3><div class="cv-entries" id="cvLanguages"></div></div>
+          <div class="cv-section"><h3>Extra-curricular activities</h3><div class="cv-entries" id="cvActivities"></div></div>
+          <div class="cv-section"><h3>References</h3><div class="cv-entries" id="cvReferences"></div></div>
+          <div class="cv-section">
+            <h3>Signature</h3>
+            <div class="cv-image-box cv-signature-box">
+              <img id="cvSignature" alt="Signature" hidden />
+              <span id="cvSignatureMissing" class="not-filled">Signature not filled up</span>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
-    <script th:src="@{/js/portal.js(v=9)}"></script>
+    <script th:src="@{/js/portal.js(v=24)}"></script>
   </body>
 </html>

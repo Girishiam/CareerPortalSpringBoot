@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>30K Admit Card Demo | Administration</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=16)}" /></head>
+  <body class="admin-body" data-admin-page="demo-admit-cards">
+    <header th:replace="~{admin/fragments/header :: header}"></header>
+    <div class="admin-shell"><aside th:replace="~{admin/fragments/sidebar :: sidebar('demo-admit-cards')}"></aside>
+      <main class="admin-main"><div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+        <div class="page-head"><div><span class="page-kicker">Temporary performance showcase</span><h1>30K admit-card PDF demo</h1>
+          <p>Search dummy records, generate PDFs in the background, and monitor throughput and ETA.</p></div></div>
+        <section class="card demo-batch-controls">
+          <div class="field"><label for="demoBatch">Batch</label><select id="demoBatch"></select></div>
+          <button class="btn btn-primary" id="generateDemoBatch" type="button">Generate pending PDFs</button>
+          <button class="btn btn-danger" id="resetDemoBatch" type="button">Reset generated PDFs</button>
+          <button class="btn btn-secondary" id="refreshDemoProgress" type="button">Refresh</button>
+        </section>
+        <section class="card demo-progress-card">
+          <div class="page-head compact-head"><div><h2 id="demoProgressTitle">Generation progress</h2><p id="demoProgressSummary">Select a batch.</p></div><strong id="demoProgressPercent">0%</strong></div>
+          <div class="demo-progress-track"><div id="demoProgressBar"></div></div>
+          <div class="details-grid" id="demoProgressFacts"></div>
+        </section>
+        <section class="card application-filters demo-card-filters">
+          <div class="field"><label>Tracking number</label><input id="demoTracking" inputmode="numeric" placeholder="Search tracking" /></div>
+          <div class="field"><label>Roll number</label><input id="demoRoll" inputmode="numeric" placeholder="Search roll" /></div>
+          <div class="field"><label>Applicant name</label><input id="demoName" placeholder="Search name" /></div>
+          <div class="field"><label>Job</label><select id="demoJob"><option value="">All jobs</option></select></div>
+          <div class="field"><label>Status</label><select id="demoStatus"><option value="">All statuses</option><option>PENDING</option><option>PROCESSING</option><option>COMPLETED</option><option>FAILED</option></select></div>
+          <div class="button-row"><button class="btn btn-primary" id="searchDemoCards" type="button">Search</button><button class="btn btn-secondary" id="clearDemoFilters" type="button">Clear</button></div>
+        </section>
+        <section class="card"><div class="table-wrap"><table class="data-table"><thead><tr>
+          <th>Candidate</th><th>Tracking / CV</th><th>Job</th><th>Exam</th><th>Center / seat</th><th>Status</th><th>Performance</th><th>Action</th>
+        </tr></thead><tbody id="demoCardRows"></tbody></table></div>
+        <nav th:replace="~{admin/fragments/pagination :: pagination}"></nav></section>
+      </main></div><script th:src="@{/js/admin.js(v=19)}"></script>
+  </body>
+</html>

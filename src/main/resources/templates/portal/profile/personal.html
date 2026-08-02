@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Personal profile | Uttara Bank Career Portal</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
   </head>
   <body class="admin-body" data-portal-page="personal">
     <header th:replace="~{portal/fragments/header :: header}"></header>
@@ -64,6 +64,10 @@
               <label>NID number</label><input name="nidNumber" maxlength="30" />
             </div>
             <div class="field">
+              <label>Passport number</label
+              ><input name="passportNumber" maxlength="30" />
+            </div>
+            <div class="field">
               <label>Email</label><input name="email" type="email" />
             </div>
             <div class="field">
@@ -80,6 +84,6 @@
         </form>
       </main>
     </div>
-    <script th:src="@{/js/portal.js(v=9)}"></script>
+    <script th:src="@{/js/portal.js(v=10)}"></script>
   </body>
 </html>

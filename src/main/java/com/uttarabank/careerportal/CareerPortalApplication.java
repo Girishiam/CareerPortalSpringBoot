@@ -7,6 +7,7 @@ import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoCon
 @SpringBootApplication(exclude = UserDetailsServiceAutoConfiguration.class)
 public class CareerPortalApplication {
   public static void main(String[] args) {
+    System.setProperty("server.port", "8000");
     SpringApplication.run(CareerPortalApplication.class, args);
   }
 }

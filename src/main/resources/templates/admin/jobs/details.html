@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Job details | Career Portal Administration</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=6)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
   </head>
   <body class="admin-body" data-admin-page="job-details">
     <header th:replace="~{admin/fragments/header :: header}"></header>
@@ -22,10 +22,56 @@
           <a class="btn btn-secondary" th:href="@{/admin/jobs}">
             Back to jobs
           </a>
+          <a class="btn btn-primary" id="editJobButton" href="#" hidden>Edit job</a>
+          <button class="btn btn-danger" id="deleteJobButton" type="button">
+            Delete job
+          </button>
         </div>
         <article class="card details-grid" id="jobDetails"></article>
+        <form class="card form-card" id="jobScheduleForm">
+          <div class="form-section-head">
+            <span class="page-kicker">Application schedule</span>
+            <h2>Edit opening and closing time</h2>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Application starts *</label>
+              <input name="applicationStartAt" type="datetime-local" required />
+            </div>
+            <div class="field">
+              <label>Application ends *</label>
+              <input name="applicationEndAt" type="datetime-local" required />
+            </div>
+          </div>
+          <div class="form-footer">
+            <span class="hint">Set the start time to now or earlier to open a published job immediately.</span>
+            <button class="btn btn-primary" type="submit">Save schedule</button>
+          </div>
+        </form>
+        <article class="card circular-actions" id="adminCircularActions" hidden>
+          <div><h2>Job circular PDF</h2><span></span></div>
+          <div class="button-row">
+            <button class="btn btn-secondary" type="button" data-download="false">View PDF</button>
+            <button class="btn btn-primary" type="button" data-download="true">Download PDF</button>
+          </div>
+        </article>
+        <form
+          class="card form-card"
+          id="adminCircularUploadForm"
+          enctype="multipart/form-data"
+        >
+          <div class="field">
+            <label>Upload or replace circular PDF</label>
+            <input name="file" type="file" accept=".pdf,application/pdf" required />
+            <span class="hint">PDF only, maximum 5 MB.</span>
+          </div>
+          <div class="form-footer">
+            <span class="hint">One circular PDF is stored per job.</span>
+            <button class="btn btn-primary" type="submit">Upload PDF</button>
+          </div>
+        </form>
       </main>
     </div>
-    <script th:src="@{/js/admin.js(v=3)}"></script>
+    <script th:src="@{/js/admin.js(v=15)}"></script>
   </body>
 </html>

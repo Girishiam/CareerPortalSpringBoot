@@ -1,7 +1,9 @@
 package com.uttarabank.careerportal.file;
 
 import java.util.*;
+import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,6 +25,15 @@ public class DocumentController {
   @GetMapping
   public List<Map<String, Object>> documents() {
     return service.documents();
+  }
+
+  @GetMapping("/{documentType}/content")
+  public ResponseEntity<byte[]> content(@PathVariable String documentType) {
+    DocumentService.DocumentContent content = service.content(documentType);
+    return ResponseEntity.ok()
+        .cacheControl(CacheControl.noStore())
+        .contentType(MediaType.parseMediaType(content.mediaType()))
+        .body(content.bytes());
   }
 
   public record DocumentResponse(

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Applications | Career Portal Administration</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=6)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
   </head>
   <body class="admin-body" data-admin-page="applications">
     <header th:replace="~{admin/fragments/header :: header}"></header>
@@ -19,10 +19,30 @@
           <div>
             <span class="page-kicker">Candidate review</span>
             <h1>Applications</h1>
-            <p>Select a job to review its candidates.</p>
+            <p>Review submitted applications by job or tracking number.</p>
           </div>
-          <select class="admin-job-filter" id="applicationJobFilter"></select>
         </div>
+        <section class="card application-filters">
+          <div class="field">
+            <label>Job</label>
+            <select class="admin-job-filter" id="applicationJobFilter"></select>
+          </div>
+          <div class="field">
+            <label>Numeric tracking number</label>
+            <input
+              id="trackingNumberSearch"
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              placeholder="Enter tracking number"
+            />
+          </div>
+          <div class="button-row">
+            <button class="btn btn-primary" id="searchApplications" type="button">Search</button>
+            <button class="btn btn-secondary" id="clearApplicationFilters" type="button">Clear</button>
+            <button class="btn btn-secondary" id="exportApplications" type="button">Export XLSX</button>
+          </div>
+        </section>
         <article class="card">
           <div class="table-wrap">
             <table class="data-table">
@@ -31,8 +51,10 @@
                   <th>Candidate</th>
                   <th>CV number</th>
                   <th>Contact</th>
+                  <th>Job</th>
                   <th>Tracking</th>
-                  <th>Status</th>
+                  <th>Eligibility</th>
+                  <th>Submitted</th>
                   <th></th>
                 </tr>
               </thead>
@@ -43,6 +65,6 @@
         </article>
       </main>
     </div>
-    <script th:src="@{/js/admin.js(v=3)}"></script>
+    <script th:src="@{/js/admin.js(v=16)}"></script>
   </body>
 </html>

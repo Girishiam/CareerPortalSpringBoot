@@ -34,17 +34,38 @@ public class MasterDataController {
   @GetMapping("/qualifications")
   public List<Map<String, Object>> qualifications() {
     return jdbc.queryForList(
-        "SELECT qualification_id id,name FROM dbo.qualification ORDER BY level_rank");
+        "SELECT qualification_id id,name FROM dbo.qualification ORDER BY COALESCE(display_order, 2147483647),level_rank,name");
   }
 
   @GetMapping("/subjects")
-  public List<Map<String, Object>> subjects() {
-    return jdbc.queryForList("SELECT subject_id id,name FROM dbo.subject ORDER BY name");
+  public List<Map<String, Object>> subjects(
+      @RequestParam(required = false) Long qualificationId) {
+    if (qualificationId != null) {
+      List<String> qualificationCodes =
+          jdbc.queryForList(
+              "SELECT code FROM dbo.qualification WHERE qualification_id=?",
+              String.class,
+              qualificationId);
+      if (!qualificationCodes.isEmpty()
+          && Set.of("SSC", "DAKHIL", "O_LEVEL", "HSC", "ALIM", "A_LEVEL")
+              .contains(qualificationCodes.getFirst())) {
+        return jdbc.queryForList(
+            """
+            SELECT subject_id id,name
+            FROM dbo.subject
+            WHERE name IN ('Science','Arts','Commerce','Humanities','Business Studies','Others')
+            ORDER BY COALESCE(display_order,2147483647),name
+            """);
+      }
+    }
+    return jdbc.queryForList(
+        "SELECT subject_id id,name FROM dbo.subject ORDER BY COALESCE(display_order,2147483647),name");
   }
 
   @GetMapping("/institutions")
   public List<Map<String, Object>> institutions() {
-    return jdbc.queryForList("SELECT institution_id id,name FROM dbo.institution ORDER BY name");
+    return jdbc.queryForList(
+        "SELECT institution_id id,name FROM dbo.institution ORDER BY COALESCE(display_order,2147483647),name");
   }
 
   @GetMapping("/departments")

@@ -63,6 +63,11 @@ public class PageController {
     return "portal/profile/experience";
   }
 
+  @GetMapping("/portal/profile/additional")
+  public String applicantAdditionalInformation() {
+    return "portal/profile/additional";
+  }
+
   @GetMapping("/portal/profile/documents")
   public String applicantDocuments() {
     return "portal/profile/documents";
@@ -108,6 +113,11 @@ public class PageController {
     return "admin/jobs/form";
   }
 
+  @GetMapping("/admin/jobs/{jobId}/edit")
+  public String adminJobEditForm() {
+    return "admin/jobs/form";
+  }
+
   @GetMapping("/admin/jobs/{jobId}")
   public String adminJobDetails() {
     return "admin/jobs/details";
@@ -118,6 +128,31 @@ public class PageController {
     return "admin/applications/list";
   }
 
+  @GetMapping("/admin/exams")
+  public String adminExams() {
+    return "admin/exams/list";
+  }
+
+  @GetMapping("/admin/exams/{examEventId}")
+  public String adminExamDetails() {
+    return "admin/exams/details";
+  }
+
+  @GetMapping("/admin/admit-cards")
+  public String adminAdmitCards() {
+    return "admin/admit-cards/list";
+  }
+
+  @GetMapping("/admin/admit-cards/{candidateId}")
+  public String adminAdmitCard() {
+    return "admin/admit-cards/details";
+  }
+
+  @GetMapping("/admin/demo-admit-cards")
+  public String adminDemoAdmitCards() {
+    return "admin/demo-admit-cards/list";
+  }
+
   @GetMapping("/admin/applications/{applicationId}")
   public String adminApplicationDetails() {
     return "admin/applications/details";
@@ -126,5 +161,15 @@ public class PageController {
   @GetMapping("/admin/users")
   public String adminUsers() {
     return "admin/users/list";
+  }
+
+  @GetMapping("/portal/admit-cards")
+  public String applicantAdmitCards() {
+    return "portal/admit-cards/list";
+  }
+
+  @GetMapping("/portal/admit-cards/{candidateId}")
+  public String applicantAdmitCard() {
+    return "portal/admit-cards/details";
   }
 }

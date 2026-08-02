@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admit Cards | Uttara Bank Career Portal</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=14)}" /></head>
+  <body class="admin-body" data-portal-page="admit-cards">
+    <header th:replace="~{portal/fragments/header :: header}"></header>
+    <div class="admin-shell"><aside th:replace="~{portal/fragments/sidebar :: sidebar('admit-cards')}"></aside>
+      <main class="admin-main"><div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div class="page-head"><div><span class="page-kicker">Examination</span><h1>My admit cards</h1>
+          <p>Published admit cards and assigned examination seats.</p></div></div>
+        <div class="list" id="admitCardList"></div>
+      </main></div><script th:src="@{/js/portal.js(v=10)}"></script>
+  </body>
+</html>

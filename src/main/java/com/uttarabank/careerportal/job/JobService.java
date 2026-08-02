@@ -19,11 +19,37 @@ public class JobService {
 
   public List<Map<String, Object>> publicJobs() {
     return jdbc.queryForList(
-        "SELECT job_id,job_code,job_title,vacancy_count,employment_type,application_start_at,application_end_at FROM dbo.job_posting WHERE status='PUBLISHED' ORDER BY application_end_at");
+        "SELECT j.job_id,j.job_code,j.job_title,j.designation,j.job_location,j.vacancy_count,j.employment_type,j.experience_type,j.salary_details,j.application_start_at,j.application_end_at,j.circular_letter_name,CAST(CASE WHEN p.job_id IS NULL THEN 0 ELSE 1 END AS BIT) circular_pdf_available FROM dbo.job_posting j LEFT JOIN dbo.job_circular_pdf p ON p.job_id=j.job_id WHERE j.status='PUBLISHED' ORDER BY j.application_end_at");
   }
 
   public Map<String, Object> publicJob(long id) {
     return one(id);
+  }
+
+  public Map<String, Object> adminJob(long id) {
+    Map<String, Object> result = new LinkedHashMap<>(one(id));
+    List<Map<String, Object>> agePolicies =
+        jdbc.queryForList(
+            "SELECT applicant_category,maximum_age FROM dbo.job_age_policy WHERE job_id=?",
+            id);
+    for (Map<String, Object> policy : agePolicies) {
+      String category = Objects.toString(value(policy, "applicant_category"));
+      if ("BANK_STAFF".equals(category))
+        result.put("existing_employee_max_age", value(policy, "maximum_age"));
+      if ("GENERAL".equals(category))
+        result.put("external_applicant_max_age", value(policy, "maximum_age"));
+    }
+    result.put(
+        "educationRequirements",
+        jdbc.queryForList(
+            """
+            SELECT qualification_id,minimum_result,result_type,match_mode
+              FROM dbo.job_education_requirement
+             WHERE job_id=?
+             ORDER BY requirement_id
+            """,
+            id));
+    return result;
   }
 
   @Transactional
@@ -77,6 +103,32 @@ public class JobService {
   }
 
   @Transactional
+  public Map<String, Object> updateSchedule(long id, JobController.ScheduleRequest request) {
+    if (!request.applicationEndAt().isAfter(request.applicationStartAt()))
+      throw new ApiException(
+          HttpStatus.BAD_REQUEST,
+          "INVALID_APPLICATION_WINDOW",
+          "Application end must be after start.");
+    int updated =
+        jdbc.update(
+            connection -> {
+              PreparedStatement statement =
+                  connection.prepareStatement(
+                      "UPDATE dbo.job_posting SET application_start_at=?,application_end_at=? WHERE job_id=? AND status IN ('DRAFT','APPROVED','PUBLISHED')");
+              statement.setTimestamp(1, Timestamp.from(request.applicationStartAt().toInstant()));
+              statement.setTimestamp(2, Timestamp.from(request.applicationEndAt().toInstant()));
+              statement.setLong(3, id);
+              return statement;
+            });
+    if (updated == 0)
+      throw new ApiException(
+          HttpStatus.CONFLICT,
+          "JOB_SCHEDULE_NOT_EDITABLE",
+          "The schedule of a closed job cannot be changed.");
+    return one(id);
+  }
+
+  @Transactional
   public Map<String, Object> transition(long id, String from, String to, Long actor) {
     int n =
         actor == null
@@ -95,6 +147,67 @@ public class JobService {
       throw new ApiException(
           HttpStatus.CONFLICT, "JOB_STATE_CONFLICT", "Job is not in the required state.");
     return one(id);
+  }
+
+  @Transactional
+  public void delete(long id) {
+    List<String> statuses =
+        jdbc.queryForList(
+            "SELECT status FROM dbo.job_posting WITH(UPDLOCK,HOLDLOCK) WHERE job_id=?",
+            String.class,
+            id);
+    if (statuses.isEmpty())
+      throw new ApiException(HttpStatus.NOT_FOUND, "JOB_NOT_FOUND", "Job not found.");
+    String status = statuses.getFirst();
+    if ("CLOSED".equals(status)) {
+      jdbc.update(
+          "UPDATE dbo.job_posting SET is_archived=1,version=version+1 WHERE job_id=?",
+          id);
+      return;
+    }
+    if (!"DRAFT".equals(status))
+      throw new ApiException(
+          HttpStatus.CONFLICT,
+          "JOB_NOT_DELETABLE",
+          "Only draft or closed jobs can be removed.");
+    Integer applications =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM dbo.job_application WHERE job_id=?", Integer.class, id);
+    if (applications != null && applications > 0)
+      throw new ApiException(
+          HttpStatus.CONFLICT,
+          "JOB_HAS_APPLICATIONS",
+          "This job cannot be deleted because applications already exist.");
+
+    if (tableExists("recruitment_stage")) {
+      if (tableExists("stage_candidate"))
+        jdbc.update(
+            "DELETE candidate FROM dbo.stage_candidate candidate JOIN dbo.recruitment_stage stage ON stage.stage_id=candidate.stage_id WHERE stage.job_id=?",
+            id);
+      if (tableExists("shortlist_batch"))
+        jdbc.update(
+            "DELETE batch FROM dbo.shortlist_batch batch JOIN dbo.recruitment_stage stage ON stage.stage_id=batch.stage_id WHERE stage.job_id=?",
+            id);
+      jdbc.update("DELETE dbo.recruitment_stage WHERE job_id=?", id);
+    }
+    for (String table :
+        List.of(
+            "job_circular_pdf",
+            "job_document_requirement",
+            "job_experience_requirement",
+            "job_education_requirement",
+            "job_age_policy"))
+      if (tableExists(table)) jdbc.update("DELETE dbo." + table + " WHERE job_id=?", id);
+    jdbc.update("DELETE dbo.job_posting WHERE job_id=?", id);
+  }
+
+  private boolean tableExists(String table) {
+    Integer count =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM sys.tables WHERE schema_id=SCHEMA_ID('dbo') AND name=?",
+            Integer.class,
+            table);
+    return count != null && count > 0;
   }
 
   private void ensureEditable(long id) {
@@ -124,6 +237,7 @@ public class JobService {
           external_applicant_eligible=?,maximum_designation=?,
           spouse_data_required=?,mobile_required=?,email_required=?,
           relative_declaration_required=?,allow_other_post_application=?,
+          multiple_application_restricted=?,
           cover_letter_cv_required=?,circular_letter_name=?
         WHERE job_id=?
         """,
@@ -144,7 +258,8 @@ public class JobService {
         r.mobileRequired(),
         r.emailRequired(),
         r.relativeDeclarationRequired(),
-        r.allowOtherPostApplication(),
+        !r.multipleApplicationRestricted(),
+        r.multipleApplicationRestricted(),
         r.coverLetterCvRequired(),
         trim(r.circularLetterName()),
         jobId);
@@ -164,18 +279,38 @@ public class JobService {
           r.ageReferenceDate());
 
     jdbc.update("DELETE FROM dbo.job_education_requirement WHERE job_id=?", jobId);
-    if (r.specificEducationRequired() && r.educationRequirements() != null)
-      for (var requirement : r.educationRequirements())
+    if (r.specificEducationRequired()
+        && (r.educationRequirements() == null || r.educationRequirements().isEmpty()))
+      throw new ApiException(
+          HttpStatus.BAD_REQUEST,
+          "EDUCATION_REQUIREMENTS_REQUIRED",
+          "Add at least one education requirement.");
+    if (r.specificEducationRequired() && r.educationRequirements() != null) {
+      Set<String> uniqueRequirements = new HashSet<>();
+      for (var requirement : r.educationRequirements()) {
+        String matchMode =
+            requirement.matchMode() == null ? "EXACT" : requirement.matchMode();
+        if (!uniqueRequirements.add(requirement.qualificationId() + ":" + matchMode))
+          throw new ApiException(
+              HttpStatus.BAD_REQUEST,
+              "DUPLICATE_EDUCATION_REQUIREMENT",
+              "The same education requirement was added more than once.");
         jdbc.update(
-            "INSERT dbo.job_education_requirement(job_id,qualification_id,minimum_result,rules_version,result_type) VALUES(?,?,?,1,?)",
+            "INSERT dbo.job_education_requirement(job_id,qualification_id,minimum_result,rules_version,result_type,match_mode) VALUES(?,?,?,1,?,?)",
             jobId,
             requirement.qualificationId(),
             requirement.minimumResult(),
-            requirement.resultType());
+            requirement.resultType(),
+            matchMode);
+      }
+    }
   }
 
   private Map<String, Object> one(long id) {
-    var rows = jdbc.queryForList("SELECT * FROM dbo.job_posting WHERE job_id=?", id);
+    var rows =
+        jdbc.queryForList(
+            "SELECT j.*,CAST(CASE WHEN p.job_id IS NULL THEN 0 ELSE 1 END AS BIT) circular_pdf_available,(SELECT COUNT(*) FROM dbo.job_application a WHERE a.job_id=j.job_id) application_count FROM dbo.job_posting j LEFT JOIN dbo.job_circular_pdf p ON p.job_id=j.job_id WHERE j.job_id=?",
+            id);
     if (rows.isEmpty())
       throw new ApiException(HttpStatus.NOT_FOUND, "JOB_NOT_FOUND", "Job not found.");
     return rows.getFirst();
@@ -183,5 +318,10 @@ public class JobService {
 
   private String trim(String s) {
     return s == null ? null : s.strip();
+  }
+
+  private Object value(Map<String, Object> row, String key) {
+    Object result = row.get(key);
+    return result != null ? result : row.get(key.toUpperCase(Locale.ROOT));
   }
 }

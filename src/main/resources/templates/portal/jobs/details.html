@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Position Details | Uttara Bank Career Portal</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
   </head>
   <body class="admin-body" data-portal-page="job-details">
     <header th:replace="~{portal/fragments/header :: header}"></header>
@@ -34,6 +34,11 @@
           </button>
         </div>
         <section class="card details-grid" id="jobFacts"></section>
+        <article class="card">
+          <span class="page-kicker">Position overview</span>
+          <h2>Job context</h2>
+          <div class="prose" id="jobContext"></div>
+        </article>
         <div class="content-grid">
           <article class="card">
             <span class="page-kicker">About the role</span>
@@ -46,6 +51,28 @@
             <div class="prose" id="jobResponsibilities"></div>
           </article>
         </div>
+        <div class="content-grid">
+          <article class="card">
+            <span class="page-kicker">Candidate requirements</span>
+            <h2>Additional requirements</h2>
+            <div class="prose" id="jobAdditionalRequirements"></div>
+          </article>
+          <article class="card">
+            <span class="page-kicker">What we offer</span>
+            <h2>Compensation and benefits</h2>
+            <div class="prose" id="jobBenefits"></div>
+          </article>
+        </div>
+        <section class="card circular-actions" id="jobCircularActions" hidden>
+          <div>
+            <span class="page-kicker">Official circular</span>
+            <h2 id="jobCircularName">Job circular PDF</h2>
+          </div>
+          <div class="button-row">
+            <button class="btn btn-secondary" type="button" data-download="false">View PDF</button>
+            <button class="btn btn-primary" type="button" data-download="true">Download PDF</button>
+          </div>
+        </section>
         <section
           class="card application-callout"
           id="draftPanel"
@@ -53,6 +80,6 @@
         ></section>
       </main>
     </div>
-    <script th:src="@{/js/portal.js(v=9)}"></script>
+    <script th:src="@{/js/portal.js(v=27)}"></script>
   </body>
 </html>

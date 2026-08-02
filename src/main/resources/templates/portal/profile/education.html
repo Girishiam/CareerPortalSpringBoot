@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Education | Uttara Bank Career Portal</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=8)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
   </head>
   <body class="admin-body" data-portal-page="education">
     <header th:replace="~{portal/fragments/header :: header}"></header>
@@ -32,15 +32,15 @@
               ><select name="qualificationId" required></select>
             </div>
             <div class="field">
-              <label>Subject</label
+              <label>Subject / group</label
               ><select name="subjectId"></select>
             </div>
             <div class="field">
-              <label>Institution</label
+              <label>University / Board</label
               ><select name="institutionId"></select>
             </div>
             <div class="field">
-              <label>Other institution</label
+              <label>Other university / board</label
               ><input name="institutionName" maxlength="200" />
             </div>
             <div class="field">
@@ -76,12 +76,24 @@
           </div>
           <div class="form-footer">
             <span class="hint">Results are validated before saving.</span
-            ><button class="btn btn-primary">Save education</button>
+            ><div class="button-row">
+              <button
+                class="btn btn-secondary"
+                id="cancelEducationEdit"
+                type="button"
+                hidden
+              >
+                Cancel
+              </button>
+              <button class="btn btn-primary" id="saveEducation">
+                Save education
+              </button>
+            </div>
           </div>
         </form>
         <div class="card"><div class="list" id="educationList"></div></div>
       </main>
     </div>
-    <script th:src="@{/js/portal.js(v=9)}"></script>
+    <script th:src="@{/js/portal.js(v=15)}"></script>
   </body>
 </html>

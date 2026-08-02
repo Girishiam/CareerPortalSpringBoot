@@ -5,16 +5,20 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.time.*;
 import java.util.*;
+import org.springframework.http.*;
 import org.springframework.jdbc.core.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1")
 public class JobController {
   private final JobService service;
+  private final JobCircularService circulars;
 
-  public JobController(JobService service) {
+  public JobController(JobService service, JobCircularService circulars) {
     this.service = service;
+    this.circulars = circulars;
   }
 
   @GetMapping("/jobs")
@@ -32,9 +36,42 @@ public class JobController {
     return service.create(r, CurrentUser.get().userId());
   }
 
+  @GetMapping("/admin/jobs/{id}")
+  public Map<String, Object> adminJob(@PathVariable long id) {
+    return service.adminJob(id);
+  }
+
   @PutMapping("/admin/jobs/{id}")
   public Map<String, Object> update(@PathVariable long id, @Valid @RequestBody JobRequest r) {
     return service.update(id, r);
+  }
+
+  @PatchMapping("/admin/jobs/{id}/schedule")
+  public Map<String, Object> updateSchedule(
+      @PathVariable long id, @Valid @RequestBody ScheduleRequest request) {
+    return service.updateSchedule(id, request);
+  }
+
+  @PostMapping(
+      value = "/admin/jobs/{id}/circular",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public Map<String, Object> uploadCircular(
+      @PathVariable long id, @RequestPart("file") MultipartFile file) {
+    return circulars.save(id, file);
+  }
+
+  @GetMapping("/jobs/{id}/circular")
+  public ResponseEntity<byte[]> circular(
+      @PathVariable long id, @RequestParam(defaultValue = "false") boolean download) {
+    JobCircularService.CircularFile file = circulars.content(id);
+    ContentDisposition disposition =
+        (download ? ContentDisposition.attachment() : ContentDisposition.inline())
+            .filename(file.originalName())
+            .build();
+    return ResponseEntity.ok()
+        .contentType(MediaType.APPLICATION_PDF)
+        .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+        .body(file.bytes());
   }
 
   @PostMapping("/admin/jobs/{id}/approve")
@@ -50,6 +87,11 @@ public class JobController {
   @PostMapping("/admin/jobs/{id}/close")
   public Map<String, Object> close(@PathVariable long id) {
     return service.transition(id, "PUBLISHED", "CLOSED", null);
+  }
+
+  @DeleteMapping("/admin/jobs/{id}")
+  public void delete(@PathVariable long id) {
+    service.delete(id);
   }
 
   public record JobRequest(
@@ -84,7 +126,7 @@ public class JobController {
       boolean mobileRequired,
       boolean emailRequired,
       boolean relativeDeclarationRequired,
-      boolean allowOtherPostApplication,
+      boolean multipleApplicationRestricted,
       boolean coverLetterCvRequired,
       @Size(max = 260) String circularLetterName,
       List<@Valid EducationRequirement> educationRequirements) {}
@@ -92,5 +134,10 @@ public class JobController {
   public record EducationRequirement(
       @Positive long qualificationId,
       @DecimalMin("0.0") Double minimumResult,
-      @Pattern(regexp = "GPA|DIVISION") String resultType) {}
+      @Pattern(regexp = "GPA|DIVISION") String resultType,
+      @Pattern(regexp = "EXACT|EQUIVALENT_LEVEL|MINIMUM_LEVEL") String matchMode) {}
+
+  public record ScheduleRequest(
+      @NotNull OffsetDateTime applicationStartAt,
+      @NotNull OffsetDateTime applicationEndAt) {}
 }

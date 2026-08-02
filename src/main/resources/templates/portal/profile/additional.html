@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Additional information | Uttara Bank Career Portal</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
+  </head>
+  <body class="admin-body" data-portal-page="additional">
+    <header th:replace="~{portal/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{portal/fragments/sidebar :: sidebar('additional')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Your CV</span>
+            <h1>Additional information</h1>
+            <p>Add training, language skills, activities, and references. Every section is optional.</p>
+          </div>
+        </div>
+
+        <section class="card form-card">
+          <div class="card-heading"><h2>Professional training</h2></div>
+          <form id="trainingForm">
+            <div class="form-grid">
+              <div class="field">
+                <label>Training title</label
+                ><input name="trainingTitle" maxlength="200" />
+              </div>
+              <div class="field">
+                <label>Duration (months)</label
+                ><input name="durationMonths" type="number" min="1" />
+              </div>
+              <div class="field full">
+                <label>Training summary</label
+                ><textarea name="trainingSummary" maxlength="1000"></textarea>
+              </div>
+            </div>
+            <div class="form-footer">
+              <span class="hint">Describe relevant professional learning.</span>
+              <button class="btn btn-primary" type="submit">Save training</button>
+            </div>
+          </form>
+          <div class="list" id="trainingList"></div>
+        </section>
+
+        <section class="card form-card">
+          <div class="card-heading"><h2>Language proficiency</h2></div>
+          <form id="languageForm">
+            <div class="form-grid">
+              <div class="field">
+                <label>Language *</label
+                ><input name="languageName" maxlength="100" required />
+              </div>
+              <div class="field">
+                <label>Speaking</label
+                ><select name="speaking"></select>
+              </div>
+              <div class="field">
+                <label>Writing</label
+                ><select name="writing"></select>
+              </div>
+              <div class="field">
+                <label>Listening</label
+                ><select name="listening"></select>
+              </div>
+              <div class="field">
+                <label>Reading</label
+                ><select name="reading"></select>
+              </div>
+            </div>
+            <div class="form-footer">
+              <span class="hint">Rate each skill separately.</span>
+              <button class="btn btn-primary" type="submit">Save language</button>
+            </div>
+          </form>
+          <div class="list" id="languageList"></div>
+        </section>
+
+        <section class="card form-card">
+          <div class="card-heading"><h2>Extra-curricular activities</h2></div>
+          <form id="activityForm">
+            <div class="form-grid">
+              <div class="field">
+                <label>Activity name *</label>
+                <input name="activityName" maxlength="200" required />
+              </div>
+              <div class="field">
+                <label>Organization</label>
+                <input name="organization" maxlength="200" />
+              </div>
+              <div class="field">
+                <label>Role</label>
+                <input name="roleName" maxlength="150" />
+              </div>
+              <div class="field">
+                <label>Achievement</label>
+                <textarea name="achievement" maxlength="500"></textarea>
+              </div>
+              <div class="field full">
+                <label>Activity summary</label>
+                <textarea name="activitySummary" maxlength="1000"></textarea>
+              </div>
+            </div>
+            <div class="form-footer">
+              <span class="hint">Add clubs, sports, volunteering, leadership, or cultural activities.</span>
+              <button class="btn btn-primary" type="submit">Save activity</button>
+            </div>
+          </form>
+          <div class="list" id="activityList"></div>
+        </section>
+
+        <section class="card form-card">
+          <div class="card-heading">
+            <div>
+              <h2>References</h2>
+              <p>Add up to two professional references.</p>
+            </div>
+          </div>
+          <form id="referenceForm">
+            <div class="form-grid">
+              <div class="field">
+                <label>Full name *</label
+                ><input name="fullName" maxlength="150" required />
+              </div>
+              <div class="field">
+                <label>Organization *</label
+                ><input name="organization" maxlength="200" required />
+              </div>
+              <div class="field">
+                <label>Designation *</label
+                ><input name="designation" maxlength="150" required />
+              </div>
+              <div class="field">
+                <label>Relationship</label
+                ><input name="relationship" maxlength="100" />
+              </div>
+              <div class="field">
+                <label>Email</label><input name="email" type="email" />
+              </div>
+              <div class="field">
+                <label>Mobile</label
+                ><input name="mobile" pattern="01[3-9][0-9]{8}" />
+              </div>
+            </div>
+            <div class="form-footer">
+              <span class="hint">A maximum of two references is allowed.</span>
+              <button class="btn btn-primary" type="submit">Save reference</button>
+            </div>
+          </form>
+          <div class="list" id="referenceList"></div>
+        </section>
+      </main>
+    </div>
+    <script th:src="@{/js/portal.js(v=20)}"></script>
+  </body>
+</html>

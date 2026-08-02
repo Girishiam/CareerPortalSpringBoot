@@ -62,10 +62,12 @@ public class AuthService {
     String cv = nextAvailableCvNumber();
     long applicantId =
         insert(
-            "INSERT dbo.applicant_profile(user_id,cv_number,full_name) VALUES (?,?,?)",
+            "INSERT dbo.applicant_profile(user_id,cv_number,full_name,email,mobile) VALUES (?,?,?,?,?)",
             userId,
             cv,
-            name);
+            name,
+            email,
+            mobile);
 
     jdbc.update(
         "INSERT dbo.audit_log(actor_user_id,action,entity_type,entity_id,correlation_id) VALUES (?,?,?,?,NEWID())",

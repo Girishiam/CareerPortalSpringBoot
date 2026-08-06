@@ -55,6 +55,14 @@ document
   ?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = event.currentTarget;
+    const password = form.elements.password;
+    const confirmation = form.elements.confirmPassword;
+    confirmation.setCustomValidity(
+      password.value === confirmation.value
+        ? ""
+        : "Password and confirm password must match.",
+    );
+    if (!form.reportValidity()) return;
     if (!beginSubmission(form)) return;
     const button = form.querySelector("button");
     button.disabled = true;
@@ -76,3 +84,17 @@ document
       endSubmission(form);
     }
   });
+
+const registrationForm = document.querySelector("#registerForm");
+if (registrationForm) {
+  const password = registrationForm.elements.password;
+  const confirmation = registrationForm.elements.confirmPassword;
+  const validatePasswordConfirmation = () =>
+    confirmation.setCustomValidity(
+      !confirmation.value || password.value === confirmation.value
+        ? ""
+        : "Password and confirm password must match.",
+    );
+  password.addEventListener("input", validatePasswordConfirmation);
+  confirmation.addEventListener("input", validatePasswordConfirmation);
+}

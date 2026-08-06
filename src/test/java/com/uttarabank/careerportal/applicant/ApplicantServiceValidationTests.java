@@ -43,7 +43,9 @@ class ApplicantServiceValidationTests {
             1,
             null,
             null,
-            "University",
+            null,
+            null,
+            null,
             "CGPA",
             new BigDecimal("4.50"),
             new BigDecimal("4.00"),
@@ -59,7 +61,18 @@ class ApplicantServiceValidationTests {
   void rejectsCgpaWithoutScaleBeforeWriting() {
     var request =
         new ApplicantController.EducationRequest(
-            1, null, null, "University", "CGPA", new BigDecimal("3.50"), null, null, 2024, true);
+            1,
+            null,
+            null,
+            null,
+            null,
+            "University",
+            "CGPA",
+            new BigDecimal("3.50"),
+            null,
+            null,
+            2024,
+            true);
 
     assertCode("INVALID_ACADEMIC_RESULT", () -> service.createEducation(request));
     verifyNoInteractions(jdbc);
@@ -69,7 +82,7 @@ class ApplicantServiceValidationTests {
   void rejectsDivisionWithoutGradeBeforeWriting() {
     var request =
         new ApplicantController.EducationRequest(
-            1, null, null, "College", "DIVISION", null, null, "  ", 2020, false);
+            1, null, null, null, null, "College", "DIVISION", null, null, "  ", 2020, false);
 
     assertCode("INVALID_ACADEMIC_RESULT", () -> service.createEducation(request));
     verifyNoInteractions(jdbc);
@@ -80,6 +93,8 @@ class ApplicantServiceValidationTests {
     var request =
         new ApplicantController.EducationRequest(
             1,
+            null,
+            null,
             null,
             null,
             "University",
@@ -99,6 +114,8 @@ class ApplicantServiceValidationTests {
     var request =
         new ApplicantController.EducationRequest(
             1,
+            null,
+            null,
             null,
             null,
             "University",
@@ -142,7 +159,9 @@ class ApplicantServiceValidationTests {
             1,
             null,
             null,
-            "University",
+            null,
+            null,
+            null,
             "CGPA",
             new BigDecimal("3.50"),
             new BigDecimal("4.00"),
@@ -152,6 +171,9 @@ class ApplicantServiceValidationTests {
     when(jdbc.queryForList(
             "SELECT applicant_id FROM dbo.applicant_profile WHERE user_id=?", Long.class, 5L))
         .thenReturn(List.of(10L));
+    when(jdbc.queryForList(
+            "SELECT name FROM dbo.qualification WHERE qualification_id=?", String.class, 1L))
+        .thenReturn(List.of("Bachelor"));
     when(jdbc.queryForObject(
             "SELECT applicant_id FROM dbo.applicant_profile WITH(UPDLOCK,HOLDLOCK) WHERE applicant_id=?",
             Long.class,

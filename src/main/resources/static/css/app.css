@@ -11,30 +11,363 @@
   --shadow: 0 18px 50px rgba(31, 41, 55, 0.08);
 }
 
-.candidate-picker{display:grid;gap:.65rem;max-height:25rem;margin-top:1rem;overflow:auto}
-.candidate-option{display:flex;align-items:center;gap:.75rem;padding:.75rem;border:1px solid var(--border);border-radius:.65rem;cursor:pointer}
-.candidate-option input{width:1.1rem;height:1.1rem}.candidate-option span{display:grid;gap:.15rem}.candidate-option small{color:var(--muted)}
-.compact-form{margin-bottom:1rem}.compact-head{margin-bottom:1rem}
-.publish-panel{display:flex;justify-content:space-between;align-items:center;gap:1rem}
-.demo-batch-controls{display:flex;align-items:end;gap:1rem}.demo-batch-controls .field{min-width:320px}.demo-progress-track{height:18px;overflow:hidden;background:#e7eee9;border-radius:999px}.demo-progress-track>div{width:0;height:100%;background:linear-gradient(90deg,var(--green),#19a660);transition:width .4s ease}.demo-progress-card #demoProgressPercent{font-size:1.7rem;color:var(--green)}.demo-card-filters{grid-template-columns:repeat(5,minmax(130px,1fr))}.demo-card-filters .button-row{grid-column:1/-1}
-.admit-card-shell{max-width:980px;margin:0 auto;padding:2rem}
-.admit-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
-.admit-card{display:flex;flex-direction:column;min-height:1120px;padding:34px;color:#111;background:#fff;border:2px solid #173f31;box-shadow:0 12px 40px rgba(0,0,0,.12);font-family:Arial,sans-serif}
-.admit-brand{display:flex;align-items:center;justify-content:center;gap:28px;padding:4px 0 16px;text-align:center;border-bottom:3px double #173f31}
-.admit-logo{width:170px;height:auto}.admit-heading h1{margin:0 0 6px;font-size:1.75rem;line-height:1.2}.admit-brand strong{text-transform:uppercase;letter-spacing:.08em}
-.admit-identity{display:grid;grid-template-columns:1fr 155px;align-items:center;gap:28px;margin:20px 0}
-.admit-candidate{text-align:left}.admit-candidate h2{margin:0 0 14px;font-size:1.45rem}.roll-box{display:inline-grid;padding:9px 28px;text-align:center;border:2px solid #111}.roll-box span{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em}.roll-box strong{font-size:1.85rem;letter-spacing:.18em}
-.admit-photo{justify-self:end;text-align:center;font-size:.72rem;color:#555}.admit-photo img{display:block;width:135px;height:155px;margin:0 auto 5px;object-fit:cover;border:1px solid #222;background:#f5f5f5}
-.admit-details{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid #333;border-left:1px solid #333}.admit-details .detail-item{min-height:64px;padding:10px 12px;border-right:1px solid #333;border-bottom:1px solid #333}
-.admit-instructions{margin-top:28px}.admit-instructions h2{padding-bottom:8px;font-size:1.1rem;border-bottom:1px solid #333}.admit-instructions li{margin-bottom:8px;line-height:1.45}.admit-signature{width:190px;margin-top:auto;padding-top:28px;text-align:center;font-size:.78rem;color:#555}.admit-signature img{display:block;width:180px;height:70px;margin:0 auto 5px;object-fit:contain;border-bottom:1px solid #333}.admit-card footer{margin-top:22px;padding-top:12px;text-align:center;font-size:.75rem;border-top:1px solid #777}
-
-@media print{
-  @page{size:A4 portrait;margin:8mm}.screen-only,.admit-card-page>.topbar{display:none!important}html,body{width:100%;height:auto;margin:0;padding:0;background:#fff}.admit-card-shell{max-width:none;margin:0;padding:0}.admit-card{position:relative;width:100%;height:280mm;min-height:0;padding:6mm 7mm 34mm;overflow:hidden;border:1.5px solid #173f31;box-shadow:none;break-inside:avoid;page-break-inside:avoid}.admit-brand{gap:18px;padding:0 0 8px}.admit-logo{width:130px}.admit-heading h1{font-size:1.45rem}.admit-brand strong{font-size:.78rem}.admit-identity{grid-template-columns:1fr 125px;gap:18px;margin:10px 0}.admit-candidate h2{margin-bottom:8px;font-size:1.2rem}.roll-box{padding:6px 22px}.roll-box strong{font-size:1.55rem}.admit-photo img{width:105px;height:125px}.admit-details .detail-item{min-height:48px;padding:6px 8px}.admit-instructions{margin-top:10px;font-size:.82rem}.admit-instructions h2{margin:0 0 6px;padding-bottom:4px;font-size:1rem}.admit-instructions ol{margin:5px 0;padding-left:20px}.admit-instructions li{margin-bottom:3px;line-height:1.3}.admit-signature{position:absolute;bottom:16mm;left:7mm;width:165px;margin:0;padding:0}.admit-signature img{width:155px;height:52px}.admit-card footer{position:absolute;right:7mm;bottom:5mm;left:7mm;margin:0;padding-top:7px}
+.audit-log-filters {
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  margin-bottom: 1rem;
+}
+.audit-log-filters .button-row {
+  grid-column: 1 / -1;
+}
+.audit-log-meta {
+  display: block;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.audit-correlation {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.75rem;
+}
+@media (max-width: 900px) {
+  .audit-log-filters {
+    grid-template-columns: 1fr;
+  }
 }
 
-@media(max-width:720px){.publish-panel{align-items:stretch;flex-direction:column}.admit-card-shell{padding:.5rem;overflow-x:auto}.admit-card{min-width:760px}}
+.candidate-picker {
+  display: grid;
+  gap: 0.65rem;
+  max-height: 25rem;
+  margin-top: 1rem;
+  overflow: auto;
+}
+.candidate-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  cursor: pointer;
+}
+.candidate-option input {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.candidate-option span {
+  display: grid;
+  gap: 0.15rem;
+}
+.candidate-option small {
+  color: var(--muted);
+}
+.compact-form {
+  margin-bottom: 1rem;
+}
+.compact-head {
+  margin-bottom: 1rem;
+}
+.publish-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.demo-batch-controls {
+  display: flex;
+  align-items: end;
+  gap: 1rem;
+}
+.demo-batch-controls .field {
+  min-width: 320px;
+}
+.demo-progress-track {
+  height: 18px;
+  overflow: hidden;
+  background: #e7eee9;
+  border-radius: 999px;
+}
+.demo-progress-track > div {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), #19a660);
+  transition: width 0.4s ease;
+}
+.demo-progress-card #demoProgressPercent {
+  font-size: 1.7rem;
+  color: var(--green);
+}
+.demo-card-filters {
+  grid-template-columns: repeat(5, minmax(130px, 1fr));
+}
+.demo-card-filters .button-row {
+  grid-column: 1/-1;
+}
+.admit-card-shell {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+.admit-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.admit-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 1120px;
+  padding: 34px;
+  color: #111;
+  background: #fff;
+  border: 2px solid #173f31;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  font-family: Arial, sans-serif;
+}
+.admit-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 4px 0 16px;
+  text-align: center;
+  border-bottom: 3px double #173f31;
+}
+.admit-logo {
+  width: 170px;
+  height: auto;
+}
+.admit-heading h1 {
+  margin: 0 0 6px;
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+.admit-brand strong {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.admit-identity {
+  display: grid;
+  grid-template-columns: 1fr 155px;
+  align-items: center;
+  gap: 28px;
+  margin: 20px 0;
+}
+.admit-candidate {
+  text-align: left;
+}
+.admit-candidate h2 {
+  margin: 0 0 14px;
+  font-size: 1.45rem;
+}
+.roll-box {
+  display: inline-grid;
+  padding: 9px 28px;
+  text-align: center;
+  border: 2px solid #111;
+}
+.roll-box span {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.roll-box strong {
+  font-size: 1.85rem;
+  letter-spacing: 0.18em;
+}
+.admit-photo {
+  justify-self: end;
+  text-align: center;
+  font-size: 0.72rem;
+  color: #555;
+}
+.admit-photo img {
+  display: block;
+  width: 135px;
+  height: 155px;
+  margin: 0 auto 5px;
+  object-fit: cover;
+  border: 1px solid #222;
+  background: #f5f5f5;
+}
+.admit-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  border-top: 1px solid #333;
+  border-left: 1px solid #333;
+}
+.admit-details .detail-item {
+  min-height: 64px;
+  padding: 10px 12px;
+  border-right: 1px solid #333;
+  border-bottom: 1px solid #333;
+}
+.admit-instructions {
+  margin-top: 28px;
+}
+.admit-instructions h2 {
+  padding-bottom: 8px;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #333;
+}
+.admit-instructions li {
+  margin-bottom: 8px;
+  line-height: 1.45;
+}
+.admit-signature {
+  width: 190px;
+  margin-top: auto;
+  padding-top: 28px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: #555;
+}
+.admit-signature img {
+  display: block;
+  width: 180px;
+  height: 70px;
+  margin: 0 auto 5px;
+  object-fit: contain;
+  border-bottom: 1px solid #333;
+}
+.admit-card footer {
+  margin-top: 22px;
+  padding-top: 12px;
+  text-align: center;
+  font-size: 0.75rem;
+  border-top: 1px solid #777;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+  .screen-only,
+  .admit-card-page > .topbar {
+    display: none !important;
+  }
+  html,
+  body {
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .admit-card-shell {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+  .admit-card {
+    position: relative;
+    width: 100%;
+    height: 280mm;
+    min-height: 0;
+    padding: 6mm 7mm 34mm;
+    overflow: hidden;
+    border: 1.5px solid #173f31;
+    box-shadow: none;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .admit-brand {
+    gap: 18px;
+    padding: 0 0 8px;
+  }
+  .admit-logo {
+    width: 130px;
+  }
+  .admit-heading h1 {
+    font-size: 1.45rem;
+  }
+  .admit-brand strong {
+    font-size: 0.78rem;
+  }
+  .admit-identity {
+    grid-template-columns: 1fr 125px;
+    gap: 18px;
+    margin: 10px 0;
+  }
+  .admit-candidate h2 {
+    margin-bottom: 8px;
+    font-size: 1.2rem;
+  }
+  .roll-box {
+    padding: 6px 22px;
+  }
+  .roll-box strong {
+    font-size: 1.55rem;
+  }
+  .admit-photo img {
+    width: 105px;
+    height: 125px;
+  }
+  .admit-details .detail-item {
+    min-height: 48px;
+    padding: 6px 8px;
+  }
+  .admit-instructions {
+    margin-top: 10px;
+    font-size: 0.82rem;
+  }
+  .admit-instructions h2 {
+    margin: 0 0 6px;
+    padding-bottom: 4px;
+    font-size: 1rem;
+  }
+  .admit-instructions ol {
+    margin: 5px 0;
+    padding-left: 20px;
+  }
+  .admit-instructions li {
+    margin-bottom: 3px;
+    line-height: 1.3;
+  }
+  .admit-signature {
+    position: absolute;
+    bottom: 16mm;
+    left: 7mm;
+    width: 165px;
+    margin: 0;
+    padding: 0;
+  }
+  .admit-signature img {
+    width: 155px;
+    height: 52px;
+  }
+  .admit-card footer {
+    position: absolute;
+    right: 7mm;
+    bottom: 5mm;
+    left: 7mm;
+    margin: 0;
+    padding-top: 7px;
+  }
+}
+
+@media (max-width: 720px) {
+  .publish-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .admit-card-shell {
+    padding: 0.5rem;
+    overflow-x: auto;
+  }
+  .admit-card {
+    min-width: 760px;
+  }
+}
 * {
   box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
 }
 html {
   scroll-behavior: smooth;
@@ -1532,5 +1865,149 @@ iframe {
   }
   .detail-item {
     padding: 15px 14px;
+  }
+}
+/* Guided CV builder */
+.cv-builder {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 22px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(15, 35, 60, 0.06);
+}
+.cv-builder-summary {
+  align-items: center;
+  background: linear-gradient(135deg, #f7faff, #eef5ff);
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 2fr);
+  padding: 18px 22px;
+}
+.cv-builder-summary > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+.cv-builder-summary strong {
+  color: #173b67;
+  font-size: 1.2rem;
+}
+.cv-builder-summary small {
+  color: var(--muted);
+}
+.cv-progress-track {
+  background: #dbe5f0;
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+  width: 100%;
+}
+.cv-progress-track > span {
+  background: linear-gradient(90deg, #1d5f9d, #2ca66f);
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  transition: width 0.35s ease;
+  width: 0;
+}
+.cv-step-nav {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(110px, 1fr));
+  overflow-x: auto;
+}
+.cv-step-nav a {
+  align-items: center;
+  border-right: 1px solid var(--border);
+  color: #536172;
+  display: grid;
+  gap: 2px;
+  min-height: 78px;
+  padding: 12px;
+  text-decoration: none;
+}
+.cv-step-nav a:last-child {
+  border-right: 0;
+}
+.cv-step-nav a:hover {
+  background: #f1f8f4;
+  color: #006d37;
+}
+.cv-step-nav a > span {
+  align-items: center;
+  background: #e5f1ea;
+  border-radius: 50%;
+  color: #006d37;
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 700;
+  height: 25px;
+  justify-content: center;
+  width: 25px;
+}
+.cv-step-nav a strong {
+  font-size: 0.88rem;
+}
+.cv-step-nav a small {
+  font-size: 0.7rem;
+}
+.cv-step-nav a.complete > span {
+  background: #ccebd9;
+  color: #006d37;
+}
+.cv-step-nav a.complete > span::after {
+  content: "✓";
+  font-size: 0.82rem;
+}
+.cv-step-nav a.complete > span {
+  font-size: 0;
+}
+.cv-step-nav a.active {
+  background: #eaf6ef;
+  box-shadow: inset 0 -3px #006d37;
+  color: #004d27;
+}
+.cv-step-nav a.active > span {
+  background: #006d37;
+  color: #fff;
+}
+
+.cv-builder-summary .cv-progress-track span,
+.cv-status .cv-progress-track span {
+  background: linear-gradient(90deg, #006d37, #00a651);
+}
+.cv-incomplete-card {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.cv-document {
+  max-width: 1050px;
+  margin: 0 auto;
+  background: #fff;
+  border-top: 5px solid #006d37;
+  box-shadow: 0 12px 35px rgba(0, 58, 30, 0.1);
+}
+.cv-document-heading {
+  padding-bottom: 18px;
+}
+.cv-document-heading h2 {
+  color: #004d27;
+}
+.dashboard-applications {
+  margin-top: 24px;
+}
+
+@media (max-width: 760px) {
+  .cv-builder-summary {
+    grid-template-columns: 1fr;
+  }
+  .cv-step-nav {
+    grid-template-columns: repeat(6, 105px);
+  }
+  .cv-step-nav a {
+    min-height: 70px;
+    padding: 10px;
+  }
+  .cv-step-nav a strong {
+    font-size: 0.78rem;
   }
 }

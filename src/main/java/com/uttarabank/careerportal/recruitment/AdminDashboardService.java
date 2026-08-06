@@ -1,6 +1,8 @@
 package com.uttarabank.careerportal.recruitment;
 
 import com.uttarabank.careerportal.common.ApiException;
+import java.sql.Timestamp;
+import java.time.*;
 import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -25,6 +27,20 @@ public class AdminDashboardService {
                   (SELECT COUNT(*) FROM dbo.applicant_profile) AS total_applicants,
                   (SELECT COUNT(*) FROM dbo.job_application WHERE status = 'SUBMITTED') AS submitted_applications
                 """));
+    metrics.put(
+        "jobApplicationCounts",
+        jdbc.queryForList(
+            """
+            SELECT job.job_id,job.job_code,job.job_title,job.status,job.vacancy_count,
+              COUNT(CASE WHEN application.status='SUBMITTED' THEN 1 END) applicant_count,
+              COUNT(CASE WHEN application.status='SUBMITTED' AND application.eligibility_status='ELIGIBLE' THEN 1 END) eligible_count,
+              COUNT(CASE WHEN application.status='SUBMITTED' AND application.eligibility_status='INELIGIBLE' THEN 1 END) ineligible_count
+            FROM dbo.job_posting job
+            LEFT JOIN dbo.job_application application ON application.job_id=job.job_id
+            WHERE job.is_archived=0
+            GROUP BY job.job_id,job.job_code,job.job_title,job.status,job.vacancy_count
+            ORDER BY applicant_count DESC,job.job_id DESC
+            """));
     metrics.put(
         "recentApplications",
         jdbc.queryForList(
@@ -86,21 +102,43 @@ public class AdminDashboardService {
         """);
   }
 
-  public Map<String, Object> applications(Long jobId, String trackingNumber, int page, int size) {
-    String tracking = normalizeTracking(trackingNumber);
+  public Map<String, Object> applications(
+      Long jobId,
+      String trackingNumber,
+      String cvNumber,
+      String mobile,
+      String email,
+      String candidateName,
+      String eligibility,
+      LocalDate submittedFrom,
+      LocalDate submittedTo,
+      int page,
+      int size) {
+    Search search =
+        search(
+            jobId,
+            trackingNumber,
+            cvNumber,
+            mobile,
+            email,
+            candidateName,
+            eligibility,
+            submittedFrom,
+            submittedTo);
     Long total =
         jdbc.queryForObject(
             """
-            SELECT COUNT(*) FROM dbo.job_application
-            WHERE status='SUBMITTED'
-              AND (? IS NULL OR job_id=?)
-              AND (? IS NULL OR tracking_number=?)
-            """,
+            SELECT COUNT(*) FROM dbo.job_application application
+            JOIN dbo.applicant_profile applicant ON applicant.applicant_id=application.applicant_id
+            JOIN dbo.user_account account ON account.user_id=applicant.user_id
+            LEFT JOIN dbo.application_profile_snapshot snapshot ON snapshot.application_id=application.application_id
+            """
+                + search.where(),
             Long.class,
-            jobId,
-            jobId,
-            tracking,
-            tracking);
+            search.parameters().toArray());
+    List<Object> parameters = new ArrayList<>(search.parameters());
+    parameters.add((long) page * size);
+    parameters.add(size);
     List<Map<String, Object>> rows =
         jdbc.queryForList(
             """
@@ -132,18 +170,13 @@ public class AdminDashboardService {
               ON account.user_id = applicant.user_id
             LEFT JOIN dbo.application_profile_snapshot AS snapshot
               ON snapshot.application_id = application.application_id
-            WHERE application.status='SUBMITTED'
-              AND (? IS NULL OR application.job_id=?)
-              AND (? IS NULL OR application.tracking_number=?)
+            """
+                + search.where()
+                + """
             ORDER BY application.submitted_at DESC
             OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
             """,
-            jobId,
-            jobId,
-            tracking,
-            tracking,
-            page * size,
-            size);
+            parameters.toArray());
 
     return Map.of(
         "content", rows,
@@ -153,12 +186,54 @@ public class AdminDashboardService {
         "totalPages", (int) Math.ceil((double) Objects.requireNonNullElse(total, 0L) / size));
   }
 
-  public byte[] exportApplications(Long jobId, String trackingNumber) {
-    String tracking = normalizeTracking(trackingNumber);
+  public byte[] exportApplications(
+      Long jobId,
+      String trackingNumber,
+      String cvNumber,
+      String mobile,
+      String email,
+      String candidateName,
+      String eligibility,
+      LocalDate submittedFrom,
+      LocalDate submittedTo) {
+    return ApplicationXlsxWriter.write(
+        applicationExportRows(
+            jobId,
+            trackingNumber,
+            cvNumber,
+            mobile,
+            email,
+            candidateName,
+            eligibility,
+            submittedFrom,
+            submittedTo));
+  }
+
+  List<Map<String, Object>> applicationExportRows(
+      Long jobId,
+      String trackingNumber,
+      String cvNumber,
+      String mobile,
+      String email,
+      String candidateName,
+      String eligibility,
+      LocalDate submittedFrom,
+      LocalDate submittedTo) {
+    Search search =
+        search(
+            jobId,
+            trackingNumber,
+            cvNumber,
+            mobile,
+            email,
+            candidateName,
+            eligibility,
+            submittedFrom,
+            submittedTo);
     List<Map<String, Object>> rows =
         jdbc.queryForList(
             """
-            SELECT application.tracking_number,application.submitted_at,
+            SELECT application.application_id,application.tracking_number,application.submitted_at,
                    application.status,application.eligibility_status,
                    job.job_code,job.job_title,job.designation job_designation,
                    job.employment_type,job.job_location,applicant.cv_number,
@@ -264,16 +339,115 @@ public class AdminDashboardService {
               JOIN dbo.file_asset file_asset ON file_asset.file_id=document.file_id
               WHERE document.applicant_id=applicant.applicant_id AND document.active=1
             ) documents
-            WHERE application.status='SUBMITTED'
-              AND (? IS NULL OR application.job_id=?)
-              AND (? IS NULL OR application.tracking_number=?)
+            """
+                + search.where()
+                + """
             ORDER BY application.submitted_at DESC
             """,
-            jobId,
-            jobId,
-            tracking,
-            tracking);
-    return ApplicationXlsxWriter.write(rows);
+            search.parameters().toArray());
+    return rows;
+  }
+
+  public String applicationExportFilename(
+      Long jobId,
+      String trackingNumber,
+      String cvNumber,
+      String mobile,
+      String email,
+      String candidateName,
+      String eligibility,
+      LocalDate submittedFrom,
+      LocalDate submittedTo) {
+    String scope = "all-jobs";
+    if (jobId != null) {
+      List<Map<String, Object>> jobs =
+          jdbc.queryForList("SELECT job_code,job_title FROM dbo.job_posting WHERE job_id=?", jobId);
+      if (!jobs.isEmpty()) {
+        Map<String, Object> job = jobs.getFirst();
+        scope =
+            "job-id-"
+                + jobId
+                + "-"
+                + safeFilename(Objects.toString(job.get("job_code"), ""))
+                + "-"
+                + safeFilename(Objects.toString(job.get("job_title"), ""));
+      }
+    }
+    List<String> filters = new ArrayList<>();
+    if (hasText(trackingNumber)) filters.add("tracking-number");
+    if (hasText(cvNumber)) filters.add("cv-number");
+    if (hasText(mobile)) filters.add("mobile");
+    if (hasText(email)) filters.add("email");
+    if (hasText(candidateName)) filters.add("candidate-name");
+    if (hasText(eligibility)) filters.add("eligibility-" + safeFilename(eligibility));
+    if (submittedFrom != null) filters.add("submitted-from");
+    if (submittedTo != null) filters.add("submitted-to");
+    String filterScope =
+        filters.isEmpty() ? "filters-none" : "filters-" + String.join("-", filters);
+    String base = "candidate-applications-" + scope + "-" + filterScope + "-" + LocalDate.now();
+    return (base.length() > 210 ? base.substring(0, 210).replaceAll("-+$", "") : base) + ".xlsx";
+  }
+
+  private static String safeFilename(String value) {
+    String safe =
+        value == null
+            ? "export"
+            : value.strip().replaceAll("[^\\p{L}\\p{N}._-]+", "-").replaceAll("^-+|-+$", "");
+    return safe.isBlank() ? "export" : safe;
+  }
+
+  private static boolean hasText(String value) {
+    return value != null && !value.isBlank();
+  }
+
+  private Search search(
+      Long jobId,
+      String trackingNumber,
+      String cvNumber,
+      String mobile,
+      String email,
+      String candidateName,
+      String eligibility,
+      LocalDate submittedFrom,
+      LocalDate submittedTo) {
+    StringBuilder where = new StringBuilder(" WHERE application.status='SUBMITTED'");
+    List<Object> parameters = new ArrayList<>();
+    addEqual(where, parameters, "application.job_id", jobId);
+    addEqual(where, parameters, "application.tracking_number", normalizeTracking(trackingNumber));
+    addContains(where, parameters, "applicant.cv_number", cvNumber);
+    addContains(where, parameters, "COALESCE(applicant.mobile,account.mobile)", mobile);
+    addContains(where, parameters, "COALESCE(applicant.email,account.email)", email);
+    addContains(
+        where, parameters, "COALESCE(snapshot.full_name,applicant.full_name)", candidateName);
+    addEqual(where, parameters, "application.eligibility_status", text(eligibility));
+    ZoneId zone = ZoneId.of("Asia/Dhaka");
+    if (submittedFrom != null) {
+      where.append(" AND application.submitted_at>=?");
+      parameters.add(Timestamp.from(submittedFrom.atStartOfDay(zone).toInstant()));
+    }
+    if (submittedTo != null) {
+      where.append(" AND application.submitted_at<?");
+      parameters.add(Timestamp.from(submittedTo.plusDays(1).atStartOfDay(zone).toInstant()));
+    }
+    return new Search(where.toString(), parameters);
+  }
+
+  private void addEqual(StringBuilder where, List<Object> parameters, String column, Object value) {
+    if (value == null) return;
+    where.append(" AND ").append(column).append("=?");
+    parameters.add(value);
+  }
+
+  private void addContains(
+      StringBuilder where, List<Object> parameters, String column, String value) {
+    String normalized = text(value);
+    if (normalized == null) return;
+    where.append(" AND ").append(column).append(" LIKE ?");
+    parameters.add("%" + normalized + "%");
+  }
+
+  private String text(String value) {
+    return value == null || value.isBlank() ? null : value.strip();
   }
 
   private String normalizeTracking(String value) {
@@ -286,6 +460,8 @@ public class AdminDashboardService {
           "Tracking number must contain digits only.");
     return tracking;
   }
+
+  private record Search(String where, List<Object> parameters) {}
 
   public Map<String, Object> application(long applicationId) {
     List<Map<String, Object>> records =
@@ -357,9 +533,9 @@ public class AdminDashboardService {
             """
             SELECT
               snapshot.qualification_id,
-              qualification.name qualification_name,
+              COALESCE(NULLIF(LTRIM(RTRIM(snapshot.qualification_name)),''),qualification.name) qualification_name,
               snapshot.subject_id,
-              subject.name subject_name,
+              COALESCE(NULLIF(LTRIM(RTRIM(snapshot.subject_name)),''),subject.name) subject_name,
               snapshot.institution_name,
               snapshot.result_type,
               snapshot.result_value,

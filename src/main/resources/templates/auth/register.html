@@ -104,6 +104,21 @@
                   required
                 />
               </div>
+
+              <div class="field full">
+                <label for="confirmPassword">Confirm password</label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  minlength="12"
+                  maxlength="72"
+                  autocomplete="new-password"
+                  placeholder="Enter the same password again"
+                  required
+                />
+                <span class="hint">Must exactly match the password above.</span>
+              </div>
             </div>
 
             <button class="btn btn-primary form-action" type="submit">
@@ -175,6 +190,6 @@
       </aside>
     </main>
 
-    <script th:src="@{/js/auth.js(v=5)}" src="/js/auth.js?v=5"></script>
+    <script th:src="@{/js/auth.js(v=6)}" src="/js/auth.js?v=6"></script>
   </body>
 </html>

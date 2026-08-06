@@ -22,7 +22,9 @@
           <a class="btn btn-secondary" th:href="@{/admin/jobs}">
             Back to jobs
           </a>
-          <a class="btn btn-primary" id="editJobButton" href="#" hidden>Edit job</a>
+          <a class="btn btn-primary" id="editJobButton" href="#" hidden
+            >Edit job</a
+          >
           <button class="btn btn-danger" id="deleteJobButton" type="button">
             Delete job
           </button>
@@ -44,15 +46,29 @@
             </div>
           </div>
           <div class="form-footer">
-            <span class="hint">Set the start time to now or earlier to open a published job immediately.</span>
+            <span class="hint"
+              >Set the start time to now or earlier to open a published job
+              immediately.</span
+            >
             <button class="btn btn-primary" type="submit">Save schedule</button>
           </div>
         </form>
         <article class="card circular-actions" id="adminCircularActions" hidden>
-          <div><h2>Job circular PDF</h2><span></span></div>
+          <div>
+            <h2>Job circular PDF</h2>
+            <span></span>
+          </div>
           <div class="button-row">
-            <button class="btn btn-secondary" type="button" data-download="false">View PDF</button>
-            <button class="btn btn-primary" type="button" data-download="true">Download PDF</button>
+            <button
+              class="btn btn-secondary"
+              type="button"
+              data-download="false"
+            >
+              View PDF
+            </button>
+            <button class="btn btn-primary" type="button" data-download="true">
+              Download PDF
+            </button>
           </div>
         </article>
         <form
@@ -62,7 +78,12 @@
         >
           <div class="field">
             <label>Upload or replace circular PDF</label>
-            <input name="file" type="file" accept=".pdf,application/pdf" required />
+            <input
+              name="file"
+              type="file"
+              accept=".pdf,application/pdf"
+              required
+            />
             <span class="hint">PDF only, maximum 5 MB.</span>
           </div>
           <div class="form-footer">

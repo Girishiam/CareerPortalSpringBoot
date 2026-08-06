@@ -38,7 +38,8 @@ public class AuthController {
       @NotBlank @Size(max = 150) String fullName,
       @NotBlank @Email @Size(max = 254) String email,
       @NotBlank @Pattern(regexp = "^01[3-9]\\d{8}$") String mobile,
-      @NotBlank @Size(min = 12, max = 72) String password) {}
+      @NotBlank @Size(min = 12, max = 72) String password,
+      @NotBlank @Size(min = 12, max = 72) String confirmPassword) {}
 
   public record RegistrationResponse(
       long userId, long applicantId, String cvNumber, boolean verificationRequired) {}

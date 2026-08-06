@@ -82,7 +82,7 @@ public class ApplicationService {
     result.put(
         "educations",
         jdbc.queryForList(
-            "SELECT qualification_id,subject_id,institution_name,result_type,result_value,result_scale,result_grade,passing_year FROM dbo.application_education_snapshot WHERE application_id=? ORDER BY passing_year DESC",
+            "SELECT qualification_id,qualification_name,subject_id,subject_name,institution_name,result_type,result_value,result_scale,result_grade,passing_year FROM dbo.application_education_snapshot WHERE application_id=? ORDER BY passing_year DESC",
             applicationId));
     result.put(
         "experiences",
@@ -110,22 +110,16 @@ public class ApplicationService {
     Map<String, Object> job = jobs.getFirst();
     if (!"PUBLISHED".equals(job.get("status")))
       throw new ApiException(
-          HttpStatus.CONFLICT,
-          "JOB_NOT_ACCEPTING_APPLICATIONS",
-          "This job is not published.");
+          HttpStatus.CONFLICT, "JOB_NOT_ACCEPTING_APPLICATIONS", "This job is not published.");
     Instant now = Instant.now();
     Instant startsAt = ((Timestamp) job.get("application_start_at")).toInstant();
     Instant endsAt = ((Timestamp) job.get("application_end_at")).toInstant();
     if (now.isBefore(startsAt))
       throw new ApiException(
-          HttpStatus.CONFLICT,
-          "APPLICATION_NOT_OPEN",
-          "Applications have not opened yet.");
+          HttpStatus.CONFLICT, "APPLICATION_NOT_OPEN", "Applications have not opened yet.");
     if (!now.isBefore(endsAt))
       throw new ApiException(
-          HttpStatus.CONFLICT,
-          "APPLICATION_CLOSED",
-          "The application deadline has passed.");
+          HttpStatus.CONFLICT, "APPLICATION_CLOSED", "The application deadline has passed.");
     Integer otherPostConflict =
         jdbc.queryForObject(
             """
@@ -144,7 +138,7 @@ public class ApplicationService {
             applicantId,
             jobId,
             Boolean.TRUE.equals(job.get("multiple_application_restricted"))
-                || Objects.equals(job.get("multiple_application_restricted"), 1)
+                    || Objects.equals(job.get("multiple_application_restricted"), 1)
                 ? 1
                 : 0);
     if (otherPostConflict != null && otherPostConflict > 0)
@@ -293,7 +287,7 @@ public class ApplicationService {
         app,
         applicant);
     jdbc.update(
-        "INSERT dbo.application_education_snapshot(application_id,qualification_id,subject_id,institution_name,result_type,result_value,result_scale,result_grade,passing_year) SELECT ?,e.qualification_id,e.subject_id,COALESCE(i.name,e.institution_name),e.result_type,e.result_value,e.result_scale,e.result_grade,e.passing_year FROM dbo.applicant_education e LEFT JOIN dbo.institution i ON i.institution_id=e.institution_id WHERE e.applicant_id=?",
+        "INSERT dbo.application_education_snapshot(application_id,qualification_id,qualification_name,subject_id,subject_name,institution_name,result_type,result_value,result_scale,result_grade,passing_year) SELECT ?,e.qualification_id,COALESCE(NULLIF(LTRIM(RTRIM(e.qualification_name)),''),q.name),e.subject_id,COALESCE(NULLIF(LTRIM(RTRIM(e.subject_name)),''),s.name),COALESCE(NULLIF(LTRIM(RTRIM(e.institution_name)),''),i.name),e.result_type,e.result_value,e.result_scale,e.result_grade,e.passing_year FROM dbo.applicant_education e JOIN dbo.qualification q ON q.qualification_id=e.qualification_id LEFT JOIN dbo.subject s ON s.subject_id=e.subject_id LEFT JOIN dbo.institution i ON i.institution_id=e.institution_id WHERE e.applicant_id=?",
         app,
         applicant);
     jdbc.update(

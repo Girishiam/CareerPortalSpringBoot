@@ -59,8 +59,7 @@ public class AdminBootstrap implements ApplicationRunner {
 
     if (hasColumn("user_account", "user_type")) {
       jdbc.update(
-          "UPDATE dbo.user_account SET user_type='ADMIN',status='ACTIVE' WHERE user_id=?",
-          userId);
+          "UPDATE dbo.user_account SET user_type='ADMIN',status='ACTIVE' WHERE user_id=?", userId);
     } else {
       jdbc.update("UPDATE dbo.user_account SET status='ACTIVE' WHERE user_id=?", userId);
     }

@@ -1,7 +1,7 @@
 package com.uttarabank.careerportal.web;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -128,6 +128,11 @@ public class PageController {
     return "admin/applications/list";
   }
 
+  @GetMapping("/admin/shortlists")
+  public String adminShortlists() {
+    return "admin/shortlists/list";
+  }
+
   @GetMapping("/admin/exams")
   public String adminExams() {
     return "admin/exams/list";
@@ -161,6 +166,11 @@ public class PageController {
   @GetMapping("/admin/users")
   public String adminUsers() {
     return "admin/users/list";
+  }
+
+  @GetMapping("/admin/audit-logs")
+  public String adminAuditLogs() {
+    return "admin/audit-logs/list";
   }
 
   @GetMapping("/portal/admit-cards")

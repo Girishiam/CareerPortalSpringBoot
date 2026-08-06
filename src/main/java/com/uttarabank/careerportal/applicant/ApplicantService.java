@@ -155,8 +155,9 @@ public class ApplicantService {
   public List<Map<String, Object>> educations() {
     return jdbc.queryForList(
         """
-        SELECT e.*,q.name qualification_name,s.name subject_name,
-               COALESCE(i.name,e.institution_name) institution_display_name
+        SELECT e.*,COALESCE(NULLIF(LTRIM(RTRIM(e.qualification_name)),''),q.name) qualification_display_name,
+               COALESCE(NULLIF(LTRIM(RTRIM(e.subject_name)),''),s.name) subject_display_name,
+               COALESCE(NULLIF(LTRIM(RTRIM(e.institution_name)),''),i.name) institution_display_name
         FROM dbo.applicant_education e
         JOIN dbo.qualification q ON q.qualification_id=e.qualification_id
         LEFT JOIN dbo.subject s ON s.subject_id=e.subject_id
@@ -177,11 +178,13 @@ public class ApplicantService {
 
   private void updateEducationRow(long id, ApplicantController.EducationRequest r) {
     jdbc.update(
-        "UPDATE dbo.applicant_education SET qualification_id=?,subject_id=?,institution_id=?,institution_name=?,result_type=?, result_value=?,result_scale=?,result_grade=?,passing_year=?,is_highest_degree=? WHERE education_id=? AND applicant_id=?",
+        "UPDATE dbo.applicant_education SET qualification_id=?,qualification_name=?,subject_id=?,subject_name=?,institution_id=?,institution_name=?,result_type=?, result_value=?,result_scale=?,result_grade=?,passing_year=?,is_highest_degree=? WHERE education_id=? AND applicant_id=?",
         r.qualificationId(),
+        customName("qualification", r.qualificationId(), r.qualificationName(), "qualification"),
         r.subjectId(),
+        customName("subject", r.subjectId(), r.subjectName(), "subject / group"),
         r.institutionId(),
-        trim(r.institutionName()),
+        customName("institution", r.institutionId(), r.institutionName(), "university / board"),
         r.resultType().toUpperCase(),
         r.resultValue(),
         r.resultScale(),
@@ -441,7 +444,9 @@ public class ApplicantService {
   public void deleteReference(long id) {
     owned("applicant_reference", "reference_id", id);
     jdbc.update(
-        "DELETE dbo.applicant_reference WHERE reference_id=? AND applicant_id=?", id, applicantId());
+        "DELETE dbo.applicant_reference WHERE reference_id=? AND applicant_id=?",
+        id,
+        applicantId());
   }
 
   private void validate(ApplicantController.EducationRequest r) {
@@ -456,6 +461,9 @@ public class ApplicantService {
     if (Set.of("DIVISION", "CLASS").contains(type)
         && (r.resultGrade() == null || r.resultGrade().isBlank()))
       throw bad("INVALID_ACADEMIC_RESULT", "Division or class is required.");
+    customName("subject", r.subjectId(), r.subjectName(), "subject / group");
+    customName("institution", r.institutionId(), r.institutionName(), "university / board");
+    customName("qualification", r.qualificationId(), r.qualificationName(), "qualification");
   }
 
   private void validate(ApplicantController.ExperienceRequest r) {
@@ -473,14 +481,17 @@ public class ApplicantService {
         c -> {
           var p =
               c.prepareStatement(
-                  "INSERT dbo.applicant_education(applicant_id,qualification_id,subject_id,institution_id,institution_name,result_type,result_value,result_scale,result_grade,passing_year,is_highest_degree) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                  "INSERT dbo.applicant_education(applicant_id,qualification_id,qualification_name,subject_id,subject_name,institution_id,institution_name,result_type,result_value,result_scale,result_grade,passing_year,is_highest_degree) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
                   Statement.RETURN_GENERATED_KEYS);
           Object[] a = {
             applicantId(),
             r.qualificationId(),
+            customName(
+                "qualification", r.qualificationId(), r.qualificationName(), "qualification"),
             r.subjectId(),
+            customName("subject", r.subjectId(), r.subjectName(), "subject / group"),
             r.institutionId(),
-            trim(r.institutionName()),
+            customName("institution", r.institutionId(), r.institutionName(), "university / board"),
             r.resultType().toUpperCase(),
             r.resultValue(),
             r.resultScale(),
@@ -587,6 +598,28 @@ public class ApplicantService {
     return s.strip();
   }
 
+  private String customName(String type, Long id, String customValue, String label) {
+    String custom = trim(customValue);
+    if (id == null) {
+      if (custom != null && !custom.isBlank())
+        throw bad(
+            "INVALID_EDUCATION_SELECTION", "Select Others before entering a custom " + label + ".");
+      return null;
+    }
+    String sql =
+        switch (type) {
+          case "subject" -> "SELECT name FROM dbo.subject WHERE subject_id=?";
+          case "institution" -> "SELECT name FROM dbo.institution WHERE institution_id=?";
+          case "qualification" -> "SELECT name FROM dbo.qualification WHERE qualification_id=?";
+          default -> throw new IllegalArgumentException("Unsupported education lookup: " + type);
+        };
+    List<String> names = jdbc.queryForList(sql, String.class, id);
+    if (names.isEmpty()) throw bad("INVALID_EDUCATION_SELECTION", "Select a valid " + label + ".");
+    boolean other = names.getFirst() != null && names.getFirst().strip().matches("(?i)others?");
+    if (other) return required(custom, label);
+    return null;
+  }
+
   private String trim(String s) {
     return s == null ? null : s.strip();
   }
@@ -611,8 +644,7 @@ public class ApplicantService {
     if (value == null || value.isBlank()) return null;
     String normalized = value.replaceAll("[\\s-]", "").toUpperCase(Locale.ROOT);
     if (!normalized.matches("[A-Z0-9]{6,20}"))
-      throw bad(
-          "INVALID_PASSPORT", "Passport number must contain 6 to 20 letters or digits.");
+      throw bad("INVALID_PASSPORT", "Passport number must contain 6 to 20 letters or digits.");
     return normalized;
   }
 

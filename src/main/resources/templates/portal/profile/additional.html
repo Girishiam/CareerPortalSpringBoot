@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Additional information | Uttara Bank Career Portal</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=21)}" />
   </head>
   <body class="admin-body" data-portal-page="additional">
     <header th:replace="~{portal/fragments/header :: header}"></header>
@@ -15,11 +15,17 @@
       ></aside>
       <main class="admin-main">
         <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div
+          th:replace="~{portal/profile/stepper :: stepper('additional')}"
+        ></div>
         <div class="page-head">
           <div>
             <span class="page-kicker">Your CV</span>
             <h1>Additional information</h1>
-            <p>Add training, language skills, activities, and references. Every section is optional.</p>
+            <p>
+              Add training, language skills, activities, and references. Every
+              section is optional.
+            </p>
           </div>
         </div>
 
@@ -42,7 +48,9 @@
             </div>
             <div class="form-footer">
               <span class="hint">Describe relevant professional learning.</span>
-              <button class="btn btn-primary" type="submit">Save training</button>
+              <button class="btn btn-primary" type="submit">
+                Save training
+              </button>
             </div>
           </form>
           <div class="list" id="trainingList"></div>
@@ -75,7 +83,9 @@
             </div>
             <div class="form-footer">
               <span class="hint">Rate each skill separately.</span>
-              <button class="btn btn-primary" type="submit">Save language</button>
+              <button class="btn btn-primary" type="submit">
+                Save language
+              </button>
             </div>
           </form>
           <div class="list" id="languageList"></div>
@@ -107,8 +117,13 @@
               </div>
             </div>
             <div class="form-footer">
-              <span class="hint">Add clubs, sports, volunteering, leadership, or cultural activities.</span>
-              <button class="btn btn-primary" type="submit">Save activity</button>
+              <span class="hint"
+                >Add clubs, sports, volunteering, leadership, or cultural
+                activities.</span
+              >
+              <button class="btn btn-primary" type="submit">
+                Save activity
+              </button>
             </div>
           </form>
           <div class="list" id="activityList"></div>
@@ -149,13 +164,22 @@
             </div>
             <div class="form-footer">
               <span class="hint">A maximum of two references is allowed.</span>
-              <button class="btn btn-primary" type="submit">Save reference</button>
+              <button class="btn btn-primary" type="submit">
+                Save reference
+              </button>
             </div>
           </form>
           <div class="list" id="referenceList"></div>
         </section>
+        <div class="form-footer cv-step-actions">
+          <span class="hint"
+            >These details are optional and can be updated later.</span
+          ><a class="btn btn-primary" href="/portal/profile/documents"
+            >Continue to documents</a
+          >
+        </div>
       </main>
     </div>
-    <script th:src="@{/js/portal.js(v=20)}"></script>
+    <script th:src="@{/js/portal.js(v=25)}"></script>
   </body>
 </html>

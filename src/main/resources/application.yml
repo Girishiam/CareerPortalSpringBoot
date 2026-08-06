@@ -7,17 +7,22 @@ spring:
     # Local SQL Server installations commonly use a self-signed certificate.
     # Production must set DB_TRUST_CERT=false and install a CA-signed SQL Server
     # certificate (or import its issuing CA into the JVM trust store).
-    url: jdbc:sqlserver://${DB_HOST:localhost}:${DB_PORT:1433};databaseName=${DB_NAME:CareerPortal};encrypt=${DB_ENCRYPT:true};trustServerCertificate=${DB_TRUST_CERT:true}
+    url: jdbc:sqlserver://${DB_HOST:localhost}:${DB_PORT:1433};databaseName=${DB_NAME:CareerPortal};encrypt=${DB_ENCRYPT:true};trustServerCertificate=${DB_TRUST_CERT:true};sslProtocol=${DB_SSL_PROTOCOL:TLSv1.2}
     username: ${DB_USERNAME:sa}
-    password: ${DB_PASSWORD:}
+    password: ${DB_PASSWORD:UblPlc@20260701}
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     hikari:
+      pool-name: main-application-pool
       maximum-pool-size: ${DB_POOL_SIZE:20}
       minimum-idle: ${DB_MIN_IDLE:2}
       connection-timeout: ${DB_CONNECTION_TIMEOUT_MS:10000}
       validation-timeout: ${DB_VALIDATION_TIMEOUT_MS:5000}
       max-lifetime: ${DB_MAX_LIFETIME_MS:300000}
       keepalive-time: ${DB_KEEPALIVE_TIME_MS:60000}
+      leak-detection-threshold: ${DB_LEAK_DETECTION_MS:20000}
+  jdbc:
+    template:
+      query-timeout: ${DB_QUERY_TIMEOUT:20s}
   servlet:
     multipart:
       max-file-size: 5MB
@@ -29,10 +34,13 @@ spring:
     baseline-version: ${FLYWAY_BASELINE_VERSION:8}
 
 server:
+  port: ${SERVER_PORT:8000}
   error:
     include-message: never
 
 career-portal:
+  demo-admit-cards:
+    max-workers: ${DEMO_PDF_MAX_WORKERS:4}
   admin-bootstrap:
     enabled: ${ADMIN_BOOTSTRAP_ENABLED:false}
     email: ${ADMIN_EMAIL:}

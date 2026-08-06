@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Personal profile | Uttara Bank Career Portal</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=21)}" />
   </head>
   <body class="admin-body" data-portal-page="personal">
     <header th:replace="~{portal/fragments/header :: header}"></header>
@@ -15,6 +15,9 @@
       ></aside>
       <main class="admin-main">
         <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div
+          th:replace="~{portal/profile/stepper :: stepper('personal')}"
+        ></div>
         <div class="page-head">
           <div>
             <span class="page-kicker">Your CV</span>
@@ -29,20 +32,20 @@
               ><input name="fullName" maxlength="150" required />
             </div>
             <div class="field">
-              <label>Father's name</label
-              ><input name="fatherName" maxlength="150" />
+              <label>Father's name *</label
+              ><input name="fatherName" maxlength="150" required />
             </div>
             <div class="field">
-              <label>Mother's name</label
-              ><input name="motherName" maxlength="150" />
+              <label>Mother's name *</label
+              ><input name="motherName" maxlength="150" required />
             </div>
             <div class="field">
               <label>Date of birth *</label
               ><input name="dateOfBirth" type="date" required />
             </div>
             <div class="field">
-              <label>Gender</label
-              ><select name="gender">
+              <label>Gender *</label
+              ><select name="gender" required>
                 <option value="">Select gender</option>
                 <option value="MALE">Male</option>
                 <option value="FEMALE">Female</option>
@@ -50,29 +53,36 @@
               </select>
             </div>
             <div class="field">
-              <label>Marital status</label
-              ><select name="maritalStatus">
+              <label>Marital status *</label
+              ><select name="maritalStatus" required>
                 <option value="">Select status</option>
                 <option value="UNMARRIED">Unmarried</option>
                 <option value="MARRIED">Married</option>
               </select>
             </div>
             <div class="field">
-              <label>Nationality</label><input name="nationality" />
+              <label>Nationality *</label
+              ><input name="nationality" maxlength="50" required />
             </div>
             <div class="field">
-              <label>NID number</label><input name="nidNumber" maxlength="30" />
+              <label>NID number *</label
+              ><input name="nidNumber" maxlength="30" required />
             </div>
             <div class="field">
               <label>Passport number</label
               ><input name="passportNumber" maxlength="30" />
             </div>
             <div class="field">
-              <label>Email</label><input name="email" type="email" />
+              <label>Email *</label><input name="email" type="email" required />
             </div>
             <div class="field">
-              <label>Mobile</label
-              ><input name="mobile" type="tel" pattern="01[3-9][0-9]{8}" />
+              <label>Mobile *</label
+              ><input
+                name="mobile"
+                type="tel"
+                pattern="01[3-9][0-9]{8}"
+                required
+              />
             </div>
           </div>
           <div class="form-footer">
@@ -84,6 +94,6 @@
         </form>
       </main>
     </div>
-    <script th:src="@{/js/portal.js(v=10)}"></script>
+    <script th:src="@{/js/portal.js(v=25)}"></script>
   </body>
 </html>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dashboard | Uttara Bank Career Portal</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=22)}" />
   </head>
   <body class="admin-body" data-portal-page="dashboard">
     <header th:replace="~{portal/fragments/header :: header}"></header>
@@ -19,85 +19,102 @@
           <div>
             <span class="page-kicker">Applicant dashboard</span>
             <h1>Welcome, <span id="welcomeName">Applicant</span>.</h1>
-            <p>Keep your career profile ready for new opportunities.</p>
+            <p>Your complete career profile and application activity.</p>
           </div>
-          <a class="btn btn-primary" id="browseJobsButton" th:href="@{/portal/jobs}">
-            Browse open positions
-          </a>
+          <a
+            class="btn btn-primary"
+            id="browseJobsButton"
+            th:href="@{/portal/jobs}"
+            >Browse open positions</a
+          >
         </div>
-        <div class="stats">
-          <article class="stat stat-featured">
-            <span>Permanent CV number</span>
-            <strong id="cvNumber">—</strong>
-            <small>Your applicant identity</small>
-          </article>
-          <article class="stat">
-            <span>Education records</span>
-            <strong id="educationCount">0</strong>
-            <small>Academic qualifications</small>
-          </article>
-          <article class="stat">
-            <span>Experience records</span>
-            <strong id="experienceCount">0</strong>
-            <small>Employment history</small>
-          </article>
-        </div>
-        <div class="dashboard-grid">
-          <article class="card readiness-card">
+
+        <section id="incompleteCvPanel" hidden>
+          <article class="card readiness-card cv-incomplete-card">
             <span class="page-kicker">Profile readiness</span>
-            <h2>Your CV status</h2>
+            <h2>Complete your CV</h2>
+            <p>
+              Finish the items below. Select an item to open the correct CV
+              step.
+            </p>
             <div id="cvReadiness"></div>
             <div class="missing-fields" id="missingFieldList"></div>
           </article>
-          <article class="card">
-            <div class="card-heading">
-              <div>
-                <span class="page-kicker">Activity</span>
-                <h2>Recent applications</h2>
-              </div>
-              <a class="text-button" th:href="@{/portal/applications}">
-                View all
-              </a>
-            </div>
-            <div class="list" id="applicationList"></div>
-          </article>
-        </div>
+        </section>
 
-        <section class="card cv-sheet">
-          <div class="card-heading">
+        <section class="card cv-sheet cv-document" id="completedCvPanel" hidden>
+          <div class="card-heading cv-document-heading">
             <div>
               <span class="page-kicker">Curriculum vitae</span>
-              <h2>Your complete CV</h2>
-              <p>Empty optional information is marked as not filled up.</p>
+              <h2 id="cvDocumentName">Curriculum Vitae</h2>
+              <p>Permanent CV number: <strong id="cvNumber">—</strong></p>
             </div>
           </div>
           <div class="cv-identity">
             <div class="cv-image-box cv-photo-box">
               <img id="cvPhoto" alt="Profile photo" hidden />
-              <span id="cvPhotoMissing" class="not-filled">Photo not filled up</span>
+              <span id="cvPhotoMissing" class="not-filled"
+                >Photo not filled up</span
+              >
             </div>
             <div>
               <h3>Personal information</h3>
               <div class="details-grid" id="cvPersonal"></div>
             </div>
           </div>
-          <div class="cv-section"><h3>Addresses</h3><div class="cv-entries" id="cvAddresses"></div></div>
-          <div class="cv-section"><h3>Education</h3><div class="cv-entries" id="cvEducations"></div></div>
-          <div class="cv-section"><h3>Experience</h3><div class="cv-entries" id="cvExperiences"></div></div>
-          <div class="cv-section"><h3>Professional training</h3><div class="cv-entries" id="cvTrainings"></div></div>
-          <div class="cv-section"><h3>Language proficiency</h3><div class="cv-entries" id="cvLanguages"></div></div>
-          <div class="cv-section"><h3>Extra-curricular activities</h3><div class="cv-entries" id="cvActivities"></div></div>
-          <div class="cv-section"><h3>References</h3><div class="cv-entries" id="cvReferences"></div></div>
+          <div class="cv-section">
+            <h3>Addresses</h3>
+            <div class="cv-entries" id="cvAddresses"></div>
+          </div>
+          <div class="cv-section">
+            <h3>Education</h3>
+            <div class="cv-entries" id="cvEducations"></div>
+          </div>
+          <div class="cv-section">
+            <h3>Experience</h3>
+            <div class="cv-entries" id="cvExperiences"></div>
+          </div>
+          <div class="cv-section">
+            <h3>Professional training</h3>
+            <div class="cv-entries" id="cvTrainings"></div>
+          </div>
+          <div class="cv-section">
+            <h3>Language proficiency</h3>
+            <div class="cv-entries" id="cvLanguages"></div>
+          </div>
+          <div class="cv-section">
+            <h3>Extra-curricular activities</h3>
+            <div class="cv-entries" id="cvActivities"></div>
+          </div>
+          <div class="cv-section">
+            <h3>References</h3>
+            <div class="cv-entries" id="cvReferences"></div>
+          </div>
           <div class="cv-section">
             <h3>Signature</h3>
             <div class="cv-image-box cv-signature-box">
               <img id="cvSignature" alt="Signature" hidden />
-              <span id="cvSignatureMissing" class="not-filled">Signature not filled up</span>
+              <span id="cvSignatureMissing" class="not-filled"
+                >Signature not filled up</span
+              >
             </div>
           </div>
         </section>
+
+        <article class="card dashboard-applications">
+          <div class="card-heading">
+            <div>
+              <span class="page-kicker">Activity</span>
+              <h2>Recent applications</h2>
+            </div>
+            <a class="text-button" th:href="@{/portal/applications}"
+              >View all</a
+            >
+          </div>
+          <div class="list" id="applicationList"></div>
+        </article>
       </main>
     </div>
-    <script th:src="@{/js/portal.js(v=24)}"></script>
+    <script th:src="@{/js/portal.js(v=27)}"></script>
   </body>
 </html>

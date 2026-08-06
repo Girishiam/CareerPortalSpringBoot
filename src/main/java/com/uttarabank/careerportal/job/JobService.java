@@ -3,6 +3,7 @@ package com.uttarabank.careerportal.job;
 import com.uttarabank.careerportal.common.ApiException;
 import java.sql.*;
 import java.util.*;
+import org.springframework.cache.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.*;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -17,21 +18,28 @@ public class JobService {
     this.jdbc = jdbc;
   }
 
+  @Cacheable(cacheNames = "publicJobs", key = "'active'", sync = true)
   public List<Map<String, Object>> publicJobs() {
     return jdbc.queryForList(
-        "SELECT j.job_id,j.job_code,j.job_title,j.designation,j.job_location,j.vacancy_count,j.employment_type,j.experience_type,j.salary_details,j.application_start_at,j.application_end_at,j.circular_letter_name,CAST(CASE WHEN p.job_id IS NULL THEN 0 ELSE 1 END AS BIT) circular_pdf_available FROM dbo.job_posting j LEFT JOIN dbo.job_circular_pdf p ON p.job_id=j.job_id WHERE j.status='PUBLISHED' ORDER BY j.application_end_at");
+        "SELECT j.job_id,j.job_code,j.job_title,j.designation,j.job_location,j.vacancy_count,j.employment_type,j.experience_type,j.salary_details,j.application_start_at,j.application_end_at,j.circular_letter_name,CAST(CASE WHEN p.job_id IS NULL THEN 0 ELSE 1 END AS BIT) circular_pdf_available FROM dbo.job_posting j LEFT JOIN dbo.job_circular_pdf p ON p.job_id=j.job_id WHERE j.status='PUBLISHED' AND j.application_end_at>SYSUTCDATETIME() ORDER BY j.application_end_at");
   }
 
   public Map<String, Object> publicJob(long id) {
-    return one(id);
+    var rows =
+        jdbc.queryForList(
+            "SELECT j.*,CAST(CASE WHEN p.job_id IS NULL THEN 0 ELSE 1 END AS BIT) circular_pdf_available FROM dbo.job_posting j LEFT JOIN dbo.job_circular_pdf p ON p.job_id=j.job_id WHERE j.job_id=? AND j.status='PUBLISHED' AND j.application_end_at>SYSUTCDATETIME()",
+            id);
+    if (rows.isEmpty())
+      throw new ApiException(
+          HttpStatus.NOT_FOUND, "JOB_NOT_AVAILABLE", "This job is no longer available.");
+    return rows.getFirst();
   }
 
   public Map<String, Object> adminJob(long id) {
     Map<String, Object> result = new LinkedHashMap<>(one(id));
     List<Map<String, Object>> agePolicies =
         jdbc.queryForList(
-            "SELECT applicant_category,maximum_age FROM dbo.job_age_policy WHERE job_id=?",
-            id);
+            "SELECT applicant_category,maximum_age FROM dbo.job_age_policy WHERE job_id=?", id);
     for (Map<String, Object> policy : agePolicies) {
       String category = Objects.toString(value(policy, "applicant_category"));
       if ("BANK_STAFF".equals(category))
@@ -53,6 +61,7 @@ public class JobService {
   }
 
   @Transactional
+  @CacheEvict(cacheNames = "publicJobs", allEntries = true)
   public Map<String, Object> create(JobController.JobRequest r, long userId) {
     checkWindow(r);
     var keys = new GeneratedKeyHolder();
@@ -82,6 +91,7 @@ public class JobService {
   }
 
   @Transactional
+  @CacheEvict(cacheNames = "publicJobs", allEntries = true)
   public Map<String, Object> update(long id, JobController.JobRequest r) {
     checkWindow(r);
     ensureEditable(id);
@@ -103,6 +113,7 @@ public class JobService {
   }
 
   @Transactional
+  @CacheEvict(cacheNames = "publicJobs", allEntries = true)
   public Map<String, Object> updateSchedule(long id, JobController.ScheduleRequest request) {
     if (!request.applicationEndAt().isAfter(request.applicationStartAt()))
       throw new ApiException(
@@ -129,6 +140,7 @@ public class JobService {
   }
 
   @Transactional
+  @CacheEvict(cacheNames = "publicJobs", allEntries = true)
   public Map<String, Object> transition(long id, String from, String to, Long actor) {
     int n =
         actor == null
@@ -150,6 +162,7 @@ public class JobService {
   }
 
   @Transactional
+  @CacheEvict(cacheNames = "publicJobs", allEntries = true)
   public void delete(long id) {
     List<String> statuses =
         jdbc.queryForList(
@@ -160,16 +173,12 @@ public class JobService {
       throw new ApiException(HttpStatus.NOT_FOUND, "JOB_NOT_FOUND", "Job not found.");
     String status = statuses.getFirst();
     if ("CLOSED".equals(status)) {
-      jdbc.update(
-          "UPDATE dbo.job_posting SET is_archived=1,version=version+1 WHERE job_id=?",
-          id);
+      jdbc.update("UPDATE dbo.job_posting SET is_archived=1,version=version+1 WHERE job_id=?", id);
       return;
     }
     if (!"DRAFT".equals(status))
       throw new ApiException(
-          HttpStatus.CONFLICT,
-          "JOB_NOT_DELETABLE",
-          "Only draft or closed jobs can be removed.");
+          HttpStatus.CONFLICT, "JOB_NOT_DELETABLE", "Only draft or closed jobs can be removed.");
     Integer applications =
         jdbc.queryForObject(
             "SELECT COUNT(*) FROM dbo.job_application WHERE job_id=?", Integer.class, id);
@@ -288,8 +297,7 @@ public class JobService {
     if (r.specificEducationRequired() && r.educationRequirements() != null) {
       Set<String> uniqueRequirements = new HashSet<>();
       for (var requirement : r.educationRequirements()) {
-        String matchMode =
-            requirement.matchMode() == null ? "EXACT" : requirement.matchMode();
+        String matchMode = requirement.matchMode() == null ? "EXACT" : requirement.matchMode();
         if (!uniqueRequirements.add(requirement.qualificationId() + ":" + matchMode))
           throw new ApiException(
               HttpStatus.BAD_REQUEST,

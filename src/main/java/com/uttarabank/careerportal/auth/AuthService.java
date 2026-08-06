@@ -26,6 +26,9 @@ public class AuthService {
 
   @Transactional
   public AuthController.RegistrationResponse register(AuthController.RegistrationRequest input) {
+    if (!Objects.equals(input.password(), input.confirmPassword()))
+      throw new ApiException(
+          HttpStatus.BAD_REQUEST, "PASSWORD_MISMATCH", "Password and confirm password must match.");
     String email = input.email().strip().toLowerCase(Locale.ROOT),
         mobile = input.mobile().strip(),
         name = input.fullName().strip();

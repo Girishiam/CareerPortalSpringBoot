@@ -36,8 +36,9 @@ public class CvService {
         "educations",
         jdbc.queryForList(
             """
-            SELECT e.*,q.name qualification_name,s.name subject_name,
-                   COALESCE(i.name,e.institution_name) institution_display_name
+            SELECT e.*,COALESCE(NULLIF(LTRIM(RTRIM(e.qualification_name)),''),q.name) qualification_display_name,
+                   COALESCE(NULLIF(LTRIM(RTRIM(e.subject_name)),''),s.name) subject_display_name,
+                   COALESCE(NULLIF(LTRIM(RTRIM(e.institution_name)),''),i.name) institution_display_name
             FROM dbo.applicant_education e
             JOIN dbo.qualification q ON q.qualification_id=e.qualification_id
             LEFT JOIN dbo.subject s ON s.subject_id=e.subject_id
@@ -84,7 +85,122 @@ public class CvService {
     List<MissingField> missing = missing(id);
     result.put("complete", missing.isEmpty());
     result.put("missingFields", missing);
+    int totalRequired = 15;
+    int completedRequired = Math.max(0, totalRequired - missing.size());
+    result.put("totalRequired", totalRequired);
+    result.put("completedRequired", completedRequired);
+    result.put("completionPercentage", Math.round(completedRequired * 100.0 / totalRequired));
+    result.put("sections", sections(result, missing));
     return result;
+  }
+
+  private List<Map<String, Object>> sections(Map<String, Object> cv, List<MissingField> missing) {
+    List<Map<String, Object>> sections = new ArrayList<>();
+    section(
+        sections,
+        missing,
+        "personal",
+        "Personal information",
+        "/portal/profile/personal",
+        10,
+        true,
+        "Personal information");
+    section(
+        sections,
+        missing,
+        "addresses",
+        "Addresses",
+        "/portal/profile/addresses",
+        2,
+        true,
+        "Addresses");
+    section(
+        sections,
+        missing,
+        "education",
+        "Education",
+        "/portal/profile/education",
+        1,
+        true,
+        "Education");
+    sections.add(
+        optionalSection(
+            "experience",
+            "Experience",
+            "/portal/profile/experience",
+            !((List<?>) cv.get("experiences")).isEmpty()));
+    sections.add(
+        optionalSection(
+            "additional",
+            "Additional information",
+            "/portal/profile/additional",
+            !((List<?>) cv.get("trainings")).isEmpty()
+                || !((List<?>) cv.get("languages")).isEmpty()
+                || !((List<?>) cv.get("activities")).isEmpty()
+                || !((List<?>) cv.get("references")).isEmpty()));
+    section(
+        sections,
+        missing,
+        "documents",
+        "Documents",
+        "/portal/profile/documents",
+        2,
+        true,
+        "Photo and signature");
+    return sections;
+  }
+
+  private void section(
+      List<Map<String, Object>> sections,
+      List<MissingField> missing,
+      String key,
+      String label,
+      String url,
+      int total,
+      boolean required,
+      String missingSection) {
+    long absent = missing.stream().filter(item -> item.section().equals(missingSection)).count();
+    sections.add(
+        Map.of(
+            "key",
+            key,
+            "label",
+            label,
+            "url",
+            url,
+            "required",
+            required,
+            "completed",
+            Math.max(0, total - absent),
+            "total",
+            total,
+            "percentage",
+            Math.round(Math.max(0, total - absent) * 100.0 / total),
+            "complete",
+            absent == 0));
+  }
+
+  private Map<String, Object> optionalSection(
+      String key, String label, String url, boolean hasData) {
+    return Map.of(
+        "key",
+        key,
+        "label",
+        label,
+        "url",
+        url,
+        "required",
+        false,
+        "completed",
+        hasData ? 1 : 0,
+        "total",
+        1,
+        "percentage",
+        hasData ? 100 : 0,
+        "complete",
+        hasData,
+        "hasData",
+        hasData);
   }
 
   public List<MissingField> missing(long id) {
@@ -99,16 +215,71 @@ public class CvService {
             """,
             id);
     List<MissingField> missing = new ArrayList<>();
-    require(missing, profile, "full_name", "Full name", "Personal information", "/portal/profile/personal");
-    require(missing, profile, "father_name", "Father's name", "Personal information", "/portal/profile/personal");
-    require(missing, profile, "mother_name", "Mother's name", "Personal information", "/portal/profile/personal");
-    require(missing, profile, "date_of_birth", "Date of birth", "Personal information", "/portal/profile/personal");
-    require(missing, profile, "gender", "Gender", "Personal information", "/portal/profile/personal");
-    require(missing, profile, "marital_status", "Marital status", "Personal information", "/portal/profile/personal");
-    require(missing, profile, "nationality", "Nationality", "Personal information", "/portal/profile/personal");
-    require(missing, profile, "nid_number", "National ID number", "Personal information", "/portal/profile/personal");
-    require(missing, profile, "resolved_email", "Email", "Personal information", "/portal/profile/personal");
-    require(missing, profile, "resolved_mobile", "Mobile number", "Personal information", "/portal/profile/personal");
+    require(
+        missing,
+        profile,
+        "full_name",
+        "Full name",
+        "Personal information",
+        "/portal/profile/personal");
+    require(
+        missing,
+        profile,
+        "father_name",
+        "Father's name",
+        "Personal information",
+        "/portal/profile/personal");
+    require(
+        missing,
+        profile,
+        "mother_name",
+        "Mother's name",
+        "Personal information",
+        "/portal/profile/personal");
+    require(
+        missing,
+        profile,
+        "date_of_birth",
+        "Date of birth",
+        "Personal information",
+        "/portal/profile/personal");
+    require(
+        missing, profile, "gender", "Gender", "Personal information", "/portal/profile/personal");
+    require(
+        missing,
+        profile,
+        "marital_status",
+        "Marital status",
+        "Personal information",
+        "/portal/profile/personal");
+    require(
+        missing,
+        profile,
+        "nationality",
+        "Nationality",
+        "Personal information",
+        "/portal/profile/personal");
+    require(
+        missing,
+        profile,
+        "nid_number",
+        "National ID number",
+        "Personal information",
+        "/portal/profile/personal");
+    require(
+        missing,
+        profile,
+        "resolved_email",
+        "Email",
+        "Personal information",
+        "/portal/profile/personal");
+    require(
+        missing,
+        profile,
+        "resolved_mobile",
+        "Mobile number",
+        "Personal information",
+        "/portal/profile/personal");
 
     for (String type : List.of("PRESENT", "PERMANENT")) {
       Integer count =
@@ -140,7 +311,12 @@ public class CvService {
     for (String type : List.of("PHOTO", "SIGNATURE")) {
       Integer count =
           jdbc.queryForObject(
-              "SELECT COUNT(*) FROM dbo.applicant_document WHERE applicant_id=? AND document_type=? AND active=1",
+              """
+              SELECT COUNT(*) FROM dbo.applicant_document document
+              JOIN dbo.file_asset file_asset ON file_asset.file_id=document.file_id
+              WHERE document.applicant_id=? AND document.document_type=? AND document.active=1
+                AND file_asset.validation_status='VALID'
+              """,
               Integer.class,
               id,
               type);

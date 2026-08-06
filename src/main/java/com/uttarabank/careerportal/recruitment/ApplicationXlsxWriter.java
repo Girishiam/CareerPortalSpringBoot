@@ -1,203 +1,215 @@
 package com.uttarabank.careerportal.recruitment;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.zip.*;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 final class ApplicationXlsxWriter {
+  private static final String[] HEADERS = {
+    "Tracking Number",
+    "Candidate Name",
+    "CV Number",
+    "Email",
+    "Mobile",
+    "Job Code",
+    "Job Title",
+    "Designation",
+    "Employment Type",
+    "Job Location",
+    "Application Status",
+    "Eligibility",
+    "Submitted At",
+    "Father's Name",
+    "Mother's Name",
+    "Date of Birth",
+    "Gender",
+    "Marital Status",
+    "Nationality",
+    "NID Number",
+    "Passport Number",
+    "Present Address",
+    "Permanent Address",
+    "Education",
+    "Experience",
+    "Training",
+    "Languages",
+    "Extracurricular Activities",
+    "References",
+    "Documents"
+  };
+  private static final String[] KEYS = {
+    "tracking_number",
+    "full_name",
+    "cv_number",
+    "email",
+    "mobile",
+    "job_code",
+    "job_title",
+    "job_designation",
+    "employment_type",
+    "job_location",
+    "status",
+    "eligibility_status",
+    "submitted_at",
+    "father_name",
+    "mother_name",
+    "date_of_birth",
+    "gender",
+    "marital_status",
+    "nationality",
+    "nid_number",
+    "passport_number",
+    "present_address",
+    "permanent_address",
+    "education",
+    "experience",
+    "training",
+    "languages",
+    "activities",
+    "reference_details",
+    "documents"
+  };
+
   private ApplicationXlsxWriter() {}
 
   static byte[] write(List<Map<String, Object>> rows) {
-    try {
-      ByteArrayOutputStream output = new ByteArrayOutputStream();
-      try (ZipOutputStream zip = new ZipOutputStream(output, StandardCharsets.UTF_8)) {
-        entry(
-            zip,
-            "[Content_Types].xml",
-            """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-              <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-              <Default Extension="xml" ContentType="application/xml"/>
-              <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
-              <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
-              <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
-            </Types>
-            """);
-        entry(
-            zip,
-            "_rels/.rels",
-            """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-              <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
-            </Relationships>
-            """);
-        entry(
-            zip,
-            "xl/workbook.xml",
-            """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-              <sheets><sheet name="Applications" sheetId="1" r:id="rId1"/></sheets>
-            </workbook>
-            """);
-        entry(
-            zip,
-            "xl/_rels/workbook.xml.rels",
-            """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-              <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
-              <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
-            </Relationships>
-            """);
-        entry(
-            zip,
-            "xl/styles.xml",
-            """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-              <fonts count="2"><font/><font><b/></font></fonts>
-              <fills count="1"><fill><patternFill patternType="none"/></fill></fills>
-              <borders count="1"><border/></borders>
-              <cellStyleXfs count="1"><xf/></cellStyleXfs>
-              <cellXfs count="2"><xf/><xf fontId="1" applyFont="1"/></cellXfs>
-            </styleSheet>
-            """);
-        entry(zip, "xl/worksheets/sheet1.xml", sheet(rows));
+    return write(rows, "Submitted Candidate Applications", false);
+  }
+
+  static byte[] writeStage(List<Map<String, Object>> rows, String titleText) {
+    return write(rows, titleText, true);
+  }
+
+  private static byte[] write(
+      List<Map<String, Object>> rows, String titleText, boolean stageFields) {
+    try (SXSSFWorkbook book = new SXSSFWorkbook(200);
+        ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+      book.setCompressTempFiles(true);
+      Sheet sheet = book.createSheet(stageFields ? "Stage Applicants" : "Submitted Applications");
+      CellStyle title =
+          style(book, true, (short) 14, IndexedColors.DARK_BLUE, IndexedColors.WHITE, false);
+      CellStyle header =
+          style(book, true, (short) 11, IndexedColors.BLUE_GREY, IndexedColors.WHITE, true);
+      CellStyle body = style(book, false, (short) 10, null, null, true);
+      CellStyle wrapped = style(book, false, (short) 10, null, null, true);
+      wrapped.setWrapText(true);
+      wrapped.setVerticalAlignment(VerticalAlignment.TOP);
+      CellStyle editable =
+          style(book, true, (short) 10, IndexedColors.LIGHT_YELLOW, IndexedColors.DARK_GREEN, true);
+      int columns = HEADERS.length + (stageFields ? 3 : 0);
+      Row titleRow = sheet.createRow(0);
+      titleRow.setHeightInPoints(26);
+      Cell titleCell = titleRow.createCell(0);
+      titleCell.setCellValue(titleText);
+      titleCell.setCellStyle(title);
+      sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, columns - 1));
+      Row headerRow = sheet.createRow(1);
+      headerRow.setHeightInPoints(30);
+      for (int i = 0; i < HEADERS.length; i++) {
+        Cell cell = headerRow.createCell(i);
+        cell.setCellValue(HEADERS[i]);
+        cell.setCellStyle(header);
       }
+      if (stageFields) {
+        String[] extra = {"Application ID (do not edit)", "Selected (YES/NO)", "Remarks"};
+        for (int i = 0; i < extra.length; i++) {
+          Cell cell = headerRow.createCell(HEADERS.length + i);
+          cell.setCellValue(extra[i]);
+          cell.setCellStyle(header);
+        }
+      }
+      int rowNumber = 2;
+      for (Map<String, Object> data : rows) {
+        Row row = sheet.createRow(rowNumber++);
+        row.setHeightInPoints(34);
+        for (int i = 0; i < KEYS.length; i++) {
+          Cell cell = row.createCell(i);
+          cell.setCellValue(text(data, KEYS[i]));
+          cell.setCellStyle(i >= 21 ? wrapped : body);
+        }
+        if (stageFields) {
+          Cell id = row.createCell(HEADERS.length);
+          id.setCellValue(text(data, "application_id"));
+          id.setCellStyle(body);
+          Cell selected = row.createCell(HEADERS.length + 1);
+          selected.setCellValue(text(data, "selected"));
+          selected.setCellStyle(editable);
+          Cell remarks = row.createCell(HEADERS.length + 2);
+          remarks.setCellValue(text(data, "remarks"));
+          remarks.setCellStyle(editable);
+        }
+      }
+      sheet.createFreezePane(0, 2);
+      sheet.setAutoFilter(new CellRangeAddress(1, Math.max(1, rowNumber - 1), 0, columns - 1));
+      int[] widths = {
+        18, 28, 20, 30, 17, 13, 30, 25, 18, 22, 18, 15, 22, 25, 25, 15, 13, 15, 15, 20, 20, 38, 38,
+        55, 55, 55, 48, 55, 48, 55
+      };
+      for (int i = 0; i < widths.length; i++)
+        sheet.setColumnWidth(i, Math.min(255, widths[i]) * 256);
+      if (stageFields) {
+        sheet.setColumnWidth(HEADERS.length, 24 * 256);
+        sheet.setColumnWidth(HEADERS.length + 1, 22 * 256);
+        sheet.setColumnWidth(HEADERS.length + 2, 45 * 256);
+        DataValidationHelper helper = sheet.getDataValidationHelper();
+        DataValidation validation =
+            helper.createValidation(
+                helper.createExplicitListConstraint(new String[] {"YES", "NO"}),
+                new org.apache.poi.ss.util.CellRangeAddressList(
+                    2, Math.max(2, rowNumber - 1), HEADERS.length + 1, HEADERS.length + 1));
+        validation.setShowErrorBox(true);
+        validation.createErrorBox("Invalid selection", "Choose YES or NO.");
+        validation.setShowPromptBox(true);
+        validation.createPromptBox(
+            "Stage selection",
+            "Choose YES to select this applicant or NO to remove the selection.");
+        sheet.addValidationData(validation);
+      }
+      book.write(output);
+      book.dispose();
       return output.toByteArray();
     } catch (IOException exception) {
       throw new IllegalStateException("Could not generate application export.", exception);
     }
   }
 
-  private static String sheet(List<Map<String, Object>> rows) {
-    StringBuilder xml =
-        new StringBuilder(
-            """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-            <sheetData>
-            """);
-    row(
-        xml,
-        1,
-        List.of(
-            "Tracking Number",
-            "Candidate",
-            "CV Number",
-            "Email",
-            "Mobile",
-            "Job Code",
-            "Job Title",
-            "Job Designation",
-            "Employment Type",
-            "Job Location",
-            "Status",
-            "Eligibility",
-            "Submitted At",
-            "Father's Name",
-            "Mother's Name",
-            "Date of Birth",
-            "Gender",
-            "Marital Status",
-            "Nationality",
-            "NID Number",
-            "Passport Number",
-            "Present Address",
-            "Permanent Address",
-            "Education",
-            "Experience",
-            "Training",
-            "Languages",
-            "Extracurricular Activities",
-            "References",
-            "Documents"),
-        true);
-    int number = 2;
-    for (Map<String, Object> data : rows)
-      row(
-          xml,
-          number++,
-          List.of(
-              text(data, "tracking_number"),
-              text(data, "full_name"),
-              text(data, "cv_number"),
-              text(data, "email"),
-              text(data, "mobile"),
-              text(data, "job_code"),
-              text(data, "job_title"),
-              text(data, "job_designation"),
-              text(data, "employment_type"),
-              text(data, "job_location"),
-              text(data, "status"),
-              text(data, "eligibility_status"),
-              text(data, "submitted_at"),
-              text(data, "father_name"),
-              text(data, "mother_name"),
-              text(data, "date_of_birth"),
-              text(data, "gender"),
-              text(data, "marital_status"),
-              text(data, "nationality"),
-              text(data, "nid_number"),
-              text(data, "passport_number"),
-              text(data, "present_address"),
-              text(data, "permanent_address"),
-              text(data, "education"),
-              text(data, "experience"),
-              text(data, "training"),
-              text(data, "languages"),
-              text(data, "activities"),
-              text(data, "reference_details"),
-              text(data, "documents")),
-          false);
-    return xml.append("</sheetData></worksheet>").toString();
-  }
-
-  private static void row(
-      StringBuilder xml, int rowNumber, List<String> values, boolean header) {
-    xml.append("<row r=\"").append(rowNumber).append("\">");
-    for (int i = 0; i < values.size(); i++) {
-      String reference = column(i) + rowNumber;
-      xml.append("<c r=\"")
-          .append(reference)
-          .append("\" t=\"inlineStr\"")
-          .append(header ? " s=\"1\"" : "")
-          .append("><is><t>")
-          .append(escape(values.get(i)))
-          .append("</t></is></c>");
+  private static CellStyle style(
+      Workbook book,
+      boolean bold,
+      short size,
+      IndexedColors fill,
+      IndexedColors fontColor,
+      boolean borders) {
+    CellStyle style = book.createCellStyle();
+    Font font = book.createFont();
+    font.setBold(bold);
+    font.setFontHeightInPoints(size);
+    if (fontColor != null) font.setColor(fontColor.getIndex());
+    style.setFont(font);
+    if (fill != null) {
+      style.setFillForegroundColor(fill.getIndex());
+      style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
     }
-    xml.append("</row>");
-  }
-
-  private static String column(int index) {
-    StringBuilder value = new StringBuilder();
-    for (int current = index; current >= 0; current = current / 26 - 1)
-      value.insert(0, (char) ('A' + current % 26));
-    return value.toString();
+    if (borders) {
+      style.setBorderBottom(BorderStyle.THIN);
+      style.setBorderTop(BorderStyle.THIN);
+      style.setBorderLeft(BorderStyle.THIN);
+      style.setBorderRight(BorderStyle.THIN);
+      short color = IndexedColors.GREY_25_PERCENT.getIndex();
+      style.setBottomBorderColor(color);
+      style.setTopBorderColor(color);
+      style.setLeftBorderColor(color);
+      style.setRightBorderColor(color);
+    }
+    style.setVerticalAlignment(VerticalAlignment.CENTER);
+    return style;
   }
 
   private static String text(Map<String, Object> row, String key) {
     Object value = row.get(key);
     if (value == null) value = row.get(key.toUpperCase(Locale.ROOT));
     return value == null ? "" : value.toString();
-  }
-
-  private static String escape(String value) {
-    return value
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace("\"", "&quot;");
-  }
-
-  private static void entry(ZipOutputStream zip, String name, String content)
-      throws IOException {
-    zip.putNextEntry(new ZipEntry(name));
-    zip.write(content.strip().getBytes(StandardCharsets.UTF_8));
-    zip.closeEntry();
   }
 }

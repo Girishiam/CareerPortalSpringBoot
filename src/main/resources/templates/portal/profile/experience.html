@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Experience | Uttara Bank Career Portal</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=21)}" />
   </head>
   <body class="admin-body" data-portal-page="experience">
     <header th:replace="~{portal/fragments/header :: header}"></header>
@@ -15,6 +15,9 @@
       ></aside>
       <main class="admin-main">
         <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div
+          th:replace="~{portal/profile/stepper :: stepper('experience')}"
+        ></div>
         <div class="page-head">
           <div>
             <span class="page-kicker">Employment history</span>
@@ -53,8 +56,14 @@
           </div>
         </form>
         <div class="card"><div class="list" id="experienceList"></div></div>
+        <div class="form-footer cv-step-actions">
+          <span class="hint">No experience? This section is optional.</span
+          ><a class="btn btn-primary" href="/portal/profile/additional"
+            >Continue to additional information</a
+          >
+        </div>
       </main>
     </div>
-    <script th:src="@{/js/portal.js(v=17)}"></script>
+    <script th:src="@{/js/portal.js(v=25)}"></script>
   </body>
 </html>

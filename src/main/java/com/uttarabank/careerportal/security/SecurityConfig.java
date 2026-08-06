@@ -1,5 +1,6 @@
 package com.uttarabank.careerportal.security;
 
+import com.uttarabank.careerportal.audit.*;
 import org.springframework.context.annotation.*;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,7 +19,9 @@ public class SecurityConfig {
   }
 
   @Bean
-  SecurityFilterChain security(HttpSecurity http, JwtAuthenticationFilter jwt) throws Exception {
+  SecurityFilterChain security(
+      HttpSecurity http, JwtAuthenticationFilter jwt, AuditEventWriter auditWriter)
+      throws Exception {
     return http.csrf(csrf -> csrf.disable())
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
@@ -50,6 +53,7 @@ public class SecurityConfig {
                     .anyRequest()
                     .authenticated())
         .addFilterBefore(jwt, UsernamePasswordAuthenticationFilter.class)
+        .addFilterAfter(new SiteActivityFilter(auditWriter), JwtAuthenticationFilter.class)
         .build();
   }
 }

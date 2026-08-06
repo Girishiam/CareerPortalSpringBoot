@@ -19,13 +19,70 @@
           <div>
             <span class="page-kicker">Candidate review</span>
             <h1>Applications</h1>
-            <p>Review submitted applications by job or tracking number.</p>
+            <p>
+              Find submitted applications by job, candidate identity, contact,
+              eligibility or submission date.
+            </p>
           </div>
         </div>
         <section class="card application-filters">
           <div class="field">
             <label>Job</label>
             <select class="admin-job-filter" id="applicationJobFilter"></select>
+          </div>
+          <div class="field">
+            <label>CV number</label
+            ><input
+              id="applicationCv"
+              type="search"
+              maxlength="30"
+              placeholder="UTB-CV-000000058"
+            />
+          </div>
+          <div class="field">
+            <label>Candidate name</label
+            ><input
+              id="applicationName"
+              type="search"
+              maxlength="200"
+              placeholder="Enter candidate name"
+            />
+          </div>
+          <div class="field">
+            <label>Mobile number</label
+            ><input
+              id="applicationMobile"
+              type="search"
+              maxlength="20"
+              inputmode="tel"
+              placeholder="01XXXXXXXXX"
+            />
+          </div>
+          <div class="field">
+            <label>Email address</label
+            ><input
+              id="applicationEmail"
+              type="search"
+              maxlength="254"
+              placeholder="candidate@example.com"
+            />
+          </div>
+          <div class="field">
+            <label>Eligibility</label
+            ><select id="applicationEligibility">
+              <option value="">All eligibility statuses</option>
+              <option>ELIGIBLE</option>
+              <option>INELIGIBLE</option>
+              <option>PENDING</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Submitted from</label
+            ><input id="applicationSubmittedFrom" type="date" />
+          </div>
+          <div class="field">
+            <label>Submitted to</label
+            ><input id="applicationSubmittedTo" type="date" />
           </div>
           <div class="field">
             <label>Numeric tracking number</label>
@@ -38,9 +95,27 @@
             />
           </div>
           <div class="button-row">
-            <button class="btn btn-primary" id="searchApplications" type="button">Search</button>
-            <button class="btn btn-secondary" id="clearApplicationFilters" type="button">Clear</button>
-            <button class="btn btn-secondary" id="exportApplications" type="button">Export XLSX</button>
+            <button
+              class="btn btn-primary"
+              id="searchApplications"
+              type="button"
+            >
+              Search
+            </button>
+            <button
+              class="btn btn-secondary"
+              id="clearApplicationFilters"
+              type="button"
+            >
+              Clear
+            </button>
+            <button
+              class="btn btn-secondary"
+              id="exportApplications"
+              type="button"
+            >
+              Export XLSX
+            </button>
           </div>
         </section>
         <article class="card">
@@ -65,6 +140,6 @@
         </article>
       </main>
     </div>
-    <script th:src="@{/js/admin.js(v=16)}"></script>
+    <script th:src="@{/js/admin.js(v=25)}"></script>
   </body>
 </html>

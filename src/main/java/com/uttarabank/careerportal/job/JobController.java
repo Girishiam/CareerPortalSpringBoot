@@ -52,9 +52,7 @@ public class JobController {
     return service.updateSchedule(id, request);
   }
 
-  @PostMapping(
-      value = "/admin/jobs/{id}/circular",
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PostMapping(value = "/admin/jobs/{id}/circular", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public Map<String, Object> uploadCircular(
       @PathVariable long id, @RequestPart("file") MultipartFile file) {
     return circulars.save(id, file);
@@ -101,8 +99,7 @@ public class JobController {
       @NotBlank String jobDescription,
       String responsibilities,
       @Positive int vacancyCount,
-      @NotBlank
-          @Pattern(regexp = "PERMANENT|PROBATIONARY|CONTRACTUAL|INTERNSHIP")
+      @NotBlank @Pattern(regexp = "PERMANENT|PROBATIONARY|CONTRACTUAL|INTERNSHIP")
           String employmentType,
       @NotNull OffsetDateTime applicationStartAt,
       @NotNull OffsetDateTime applicationEndAt,
@@ -138,6 +135,5 @@ public class JobController {
       @Pattern(regexp = "EXACT|EQUIVALENT_LEVEL|MINIMUM_LEVEL") String matchMode) {}
 
   public record ScheduleRequest(
-      @NotNull OffsetDateTime applicationStartAt,
-      @NotNull OffsetDateTime applicationEndAt) {}
+      @NotNull OffsetDateTime applicationStartAt, @NotNull OffsetDateTime applicationEndAt) {}
 }

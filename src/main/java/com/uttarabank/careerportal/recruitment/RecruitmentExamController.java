@@ -129,7 +129,7 @@ public class RecruitmentExamController {
 
   public record ExamRequest(
       @NotNull Long jobId,
-      @NotBlank @Pattern(regexp = "MCQ|WRITTEN|COMBINED") String examType,
+      @NotBlank @Pattern(regexp = "MCQ|WRITTEN|COMBINED|VIVA") String examType,
       @NotBlank @Size(max = 200) String title,
       @NotNull Instant examStartAt,
       @NotNull Instant examEndAt,

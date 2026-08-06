@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <section
+      class="cv-builder"
+      th:fragment="stepper(activeStep)"
+      data-cv-stepper
+      th:attr="data-active-step=${activeStep}"
+    >
+      <div class="cv-builder-summary">
+        <div>
+          <span class="page-kicker">CV builder</span
+          ><strong><span data-cv-percentage>0</span>% complete</strong
+          ><small data-cv-progress-label>Checking your CV...</small>
+        </div>
+        <div
+          class="cv-progress-track"
+          role="progressbar"
+          aria-label="CV completion"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <span data-cv-progress-bar></span>
+        </div>
+      </div>
+      <nav class="cv-step-nav" aria-label="CV sections">
+        <a
+          th:classappend="${activeStep == 'personal'} ? ' active'"
+          href="/portal/profile/personal"
+          data-cv-step="personal"
+          ><span>1</span><strong>Personal</strong></a
+        >
+        <a
+          th:classappend="${activeStep == 'addresses'} ? ' active'"
+          href="/portal/profile/addresses"
+          data-cv-step="addresses"
+          ><span>2</span><strong>Addresses</strong></a
+        >
+        <a
+          th:classappend="${activeStep == 'education'} ? ' active'"
+          href="/portal/profile/education"
+          data-cv-step="education"
+          ><span>3</span><strong>Education</strong></a
+        >
+        <a
+          th:classappend="${activeStep == 'experience'} ? ' active'"
+          href="/portal/profile/experience"
+          data-cv-step="experience"
+          ><span>4</span><strong>Experience</strong><small>Optional</small></a
+        >
+        <a
+          th:classappend="${activeStep == 'additional'} ? ' active'"
+          href="/portal/profile/additional"
+          data-cv-step="additional"
+          ><span>5</span><strong>Additional</strong><small>Optional</small></a
+        >
+        <a
+          th:classappend="${activeStep == 'documents'} ? ' active'"
+          href="/portal/profile/documents"
+          data-cv-step="documents"
+          ><span>6</span><strong>Documents</strong></a
+        >
+      </nav>
+    </section>
+  </body>
+</html>

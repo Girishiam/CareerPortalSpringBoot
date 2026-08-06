@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Shortlists &amp; stages | Career Portal Administration</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=14)}" />
+  </head>
+  <body class="admin-body" data-admin-page="shortlists">
+    <header th:replace="~{admin/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{admin/fragments/sidebar :: sidebar('shortlists')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Candidate selection</span>
+            <h1>Shortlists &amp; recruitment stages</h1>
+            <p>
+              Review job applicants, set the stage selection flag manually or
+              through XLSX, publish results, and notify applicants.
+            </p>
+          </div>
+        </div>
+        <section class="card">
+          <div class="form-grid">
+            <div class="field">
+              <label for="shortlistJob">Job</label
+              ><select id="shortlistJob"></select>
+            </div>
+            <div class="field">
+              <label for="shortlistStage">Stage</label
+              ><select id="shortlistStage"></select>
+            </div>
+            <div class="field field-span-2">
+              <label for="shortlistSearch">Candidate search</label
+              ><input
+                id="shortlistSearch"
+                placeholder="Name, CV, tracking number or mobile"
+              />
+            </div>
+            <div class="field-span-2">
+              <button
+                id="searchShortlist"
+                class="btn btn-secondary"
+                type="button"
+              >
+                Search
+              </button>
+              <button
+                id="exportShortlist"
+                class="btn btn-secondary"
+                type="button"
+              >
+                Export applicants XLSX
+              </button>
+            </div>
+          </div>
+        </section>
+        <section class="card">
+          <h2>Import applicant selection flags</h2>
+          <form id="shortlistImport" class="form-grid">
+            <div class="field field-span-2">
+              <label>Reviewed applicants XLSX</label
+              ><input name="file" type="file" accept=".xlsx" required />
+            </div>
+            <label
+              ><input name="notifyApplicants" type="checkbox" /> Notify newly
+              shortlisted applicants</label
+            >
+            <div>
+              <button class="btn btn-primary" type="submit">
+                Upload &amp; apply selection
+              </button>
+            </div>
+          </form>
+        </section>
+        <section class="card">
+          <div class="page-head">
+            <div>
+              <h2 id="shortlistHeading">Candidates</h2>
+              <p id="shortlistSummary" class="hint"></p>
+            </div>
+            <div>
+              <label
+                ><input id="notifyShortlisted" type="checkbox" /> Notify
+                applicants</label
+              >
+              <button
+                id="selectCandidates"
+                class="btn btn-primary"
+                type="button"
+              >
+                Shortlist checked
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th><input id="checkAllCandidates" type="checkbox" /></th>
+                  <th>Candidate</th>
+                  <th>Contact</th>
+                  <th>Tracking</th>
+                  <th>Decision</th>
+                  <th>Result</th>
+                  <th>Source</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="shortlistRows"></tbody>
+            </table>
+          </div>
+          <div id="pagination" class="pagination"></div>
+        </section>
+      </main>
+    </div>
+    <script th:src="@{/js/admin.js(v=27)}"></script>
+  </body>
+</html>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Addresses | Uttara Bank Career Portal</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=21)}" />
   </head>
   <body class="admin-body" data-portal-page="addresses">
     <header th:replace="~{portal/fragments/header :: header}"></header>
@@ -15,6 +15,9 @@
       ></aside>
       <main class="admin-main">
         <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div
+          th:replace="~{portal/profile/stepper :: stepper('addresses')}"
+        ></div>
         <div class="page-head">
           <div>
             <span class="page-kicker">Your CV</span>
@@ -97,6 +100,6 @@
         </button>
       </main>
     </div>
-    <script th:src="@{/js/portal.js(v=14)}"></script>
+    <script th:src="@{/js/portal.js(v=25)}"></script>
   </body>
 </html>

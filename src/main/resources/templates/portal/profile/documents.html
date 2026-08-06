@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Documents | Uttara Bank Career Portal</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=21)}" />
   </head>
   <body class="admin-body" data-portal-page="documents">
     <header th:replace="~{portal/fragments/header :: header}"></header>
@@ -15,6 +15,9 @@
       ></aside>
       <main class="admin-main">
         <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div
+          th:replace="~{portal/profile/stepper :: stepper('documents')}"
+        ></div>
         <div class="page-head">
           <div>
             <span class="page-kicker">Verified files</span>
@@ -32,7 +35,9 @@
           <div class="card-heading">
             <div>
               <h2>Profile photo</h2>
-              <p>Upload a recent, clear, front-facing passport-style photograph.</p>
+              <p>
+                Upload a recent, clear, front-facing passport-style photograph.
+              </p>
             </div>
           </div>
           <div class="document-preview photo-preview">
@@ -82,7 +87,9 @@
             <span>Maximum file size: 1 MB</span>
           </div>
           <div class="form-footer">
-            <span class="hint">A new upload replaces the current signature.</span>
+            <span class="hint"
+              >A new upload replaces the current signature.</span
+            >
             <button class="btn btn-primary" type="submit">Save</button>
           </div>
         </form>
@@ -91,8 +98,13 @@
           <h2>Current files</h2>
           <div class="list" id="documentList"></div>
         </div>
+        <div class="form-footer cv-step-actions">
+          <span class="hint"
+            >Your completion percentage updates after each valid upload.</span
+          ><a class="btn btn-primary" href="/portal/dashboard">Finish CV</a>
+        </div>
       </main>
     </div>
-    <script th:src="@{/js/portal.js(v=24)}"></script>
+    <script th:src="@{/js/portal.js(v=25)}"></script>
   </body>
 </html>

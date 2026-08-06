@@ -10,34 +10,84 @@
   <body class="admin-body" data-admin-page="exams">
     <header th:replace="~{admin/fragments/header :: header}"></header>
     <div class="admin-shell">
-      <aside th:replace="~{admin/fragments/sidebar :: sidebar('exams')}"></aside>
+      <aside
+        th:replace="~{admin/fragments/sidebar :: sidebar('exams')}"
+      ></aside>
       <main class="admin-main">
         <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
         <div class="page-head">
-          <div><span class="page-kicker">Recruitment operations</span><h1>Exams &amp; admit cards</h1>
-            <p>Create MCQ, written, or one combined same-day examination.</p></div>
+          <div>
+            <span class="page-kicker">Recruitment operations</span>
+            <h1>Exams &amp; admit cards</h1>
+            <p>
+              Create MCQ, written, viva, or one combined same-day examination.
+            </p>
+          </div>
         </div>
         <section class="card">
           <h2>Create exam event</h2>
           <form id="examForm" class="form-grid">
-            <div class="field field-span-2"><label>Job</label><select name="jobId" id="examJob" required></select></div>
-            <div class="field"><label>Exam format</label><select name="examType" required>
-              <option value="MCQ">MCQ / preliminary</option><option value="WRITTEN">Written</option>
-              <option value="COMBINED">MCQ + written (one admit card)</option>
-            </select></div>
-            <div class="field"><label>Title</label><input name="title" maxlength="200" required /></div>
-            <div class="field"><label>Reporting time</label><input name="reportingAt" type="datetime-local" /></div>
-            <div class="field"><label>Exam starts</label><input name="examStartAt" type="datetime-local" required /></div>
-            <div class="field"><label>Exam ends</label><input name="examEndAt" type="datetime-local" required /></div>
-            <div class="field field-span-2"><label>Candidate instructions</label><textarea name="instructions" rows="5"
-              placeholder="Reporting requirements, allowed materials, prohibited devices and identity documents."></textarea></div>
-            <div class="field-span-2"><button class="btn btn-primary" type="submit">Create exam</button></div>
+            <div class="field field-span-2">
+              <label>Job</label
+              ><select name="jobId" id="examJob" required></select>
+            </div>
+            <div class="field">
+              <label>Exam format</label
+              ><select name="examType" required>
+                <option value="MCQ">MCQ / preliminary</option>
+                <option value="WRITTEN">Written</option>
+                <option value="VIVA">Viva / interview</option>
+                <option value="COMBINED">MCQ + written (one admit card)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Title</label
+              ><input name="title" maxlength="200" required />
+            </div>
+            <div class="field">
+              <label>Reporting time</label
+              ><input name="reportingAt" type="datetime-local" />
+            </div>
+            <div class="field">
+              <label>Exam starts</label
+              ><input name="examStartAt" type="datetime-local" required />
+            </div>
+            <div class="field">
+              <label>Exam ends</label
+              ><input name="examEndAt" type="datetime-local" required />
+            </div>
+            <div class="field field-span-2">
+              <label>Candidate instructions</label
+              ><textarea
+                name="instructions"
+                rows="5"
+                placeholder="Reporting requirements, allowed materials, prohibited devices and identity documents."
+              ></textarea>
+            </div>
+            <div class="field-span-2">
+              <button class="btn btn-primary" type="submit">Create exam</button>
+            </div>
           </form>
         </section>
-        <section class="card"><h2>Exam events</h2><div class="table-wrap"><table class="data-table">
-          <thead><tr><th>Exam</th><th>Job</th><th>Schedule</th><th>Candidates</th><th>Centers</th><th>Status</th><th></th></tr></thead>
-          <tbody id="examRows"></tbody>
-        </table></div></section>
+        <section class="card">
+          <h2>Exam events</h2>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Exam</th>
+                  <th>Job</th>
+                  <th>Schedule</th>
+                  <th>Candidates</th>
+                  <th>Centers</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="examRows"></tbody>
+            </table>
+          </div>
+        </section>
       </main>
     </div>
     <script th:src="@{/js/admin.js(v=17)}"></script>

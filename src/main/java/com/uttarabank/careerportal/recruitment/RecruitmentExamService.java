@@ -43,19 +43,24 @@ public class RecruitmentExamService {
   }
 
   @Transactional
-  public Map<String, Object> create(
-      RecruitmentExamController.ExamRequest request, long userId) {
+  public Map<String, Object> create(RecruitmentExamController.ExamRequest request, long userId) {
     if (!request.examEndAt().isAfter(request.examStartAt()))
       throw bad("INVALID_EXAM_WINDOW", "Exam end must be after exam start.");
     if (request.reportingAt() != null && request.reportingAt().isAfter(request.examStartAt()))
       throw bad("INVALID_REPORTING_TIME", "Reporting time cannot be after exam start.");
     requireJob(request.jobId());
+    Long stageId =
+        jdbc.query(
+            "SELECT TOP 1 stage_id FROM dbo.recruitment_stage WHERE job_id=? AND active=1 AND stage_type=? ORDER BY stage_order,stage_id",
+            rs -> rs.next() ? rs.getLong(1) : null,
+            request.jobId(),
+            request.examType());
     long id =
         insert(
             """
             INSERT dbo.recruitment_exam(job_id,exam_type,title,exam_start_at,exam_end_at,
-                                  reporting_at,instructions,created_by)
-            VALUES (?,?,?,?,?,?,?,?)
+                                  reporting_at,instructions,created_by,stage_id)
+            VALUES (?,?,?,?,?,?,?,?,?)
             """,
             request.jobId(),
             request.examType(),
@@ -64,8 +69,8 @@ public class RecruitmentExamService {
             Timestamp.from(request.examEndAt()),
             request.reportingAt() == null ? null : Timestamp.from(request.reportingAt()),
             clean(request.instructions()),
-            userId);
-    audit(userId, "EXAM_CREATED", "EXAM_EVENT", id);
+            userId,
+            stageId);
     return exam(id);
   }
 
@@ -132,10 +137,19 @@ public class RecruitmentExamService {
         throw bad(
             "INVALID_EXAM_CANDIDATE",
             "Every selected candidate must have a submitted application for this job.");
-      if ("WRITTEN".equals(type) && hasScreeningEvent(jobId, eventId) && !passedScreening(jobId, applicationId))
+      Long stageId = nullableNumber(event, "stage_id");
+      if (stageId != null && !isShortlisted(stageId, applicationId))
+        throw bad(
+            "NOT_SHORTLISTED", "Candidate must be shortlisted for this recruitment stage first.");
+      if ("WRITTEN".equals(type)
+          && hasScreeningEvent(jobId, eventId)
+          && !passedScreening(jobId, applicationId))
         throw bad(
             "MCQ_NOT_PASSED",
             "Written-exam candidates must have PASSED an earlier MCQ or combined screening event.");
+      if ("VIVA".equals(type) && !passedWritten(jobId, applicationId))
+        throw bad(
+            "WRITTEN_NOT_PASSED", "Viva candidates must have PASSED the written stage first.");
       added +=
           jdbc.update(
               """
@@ -152,6 +166,29 @@ public class RecruitmentExamService {
     return Map.of("selected", added, "examEventId", eventId);
   }
 
+  private boolean isShortlisted(long stageId, long applicationId) {
+    Integer count =
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM dbo.stage_candidate WHERE stage_id=? AND application_id=? AND decision_status='SHORTLISTED'",
+            Integer.class,
+            stageId,
+            applicationId);
+    return count != null && count > 0;
+  }
+
+  private boolean passedWritten(long jobId, long applicationId) {
+    Integer count =
+        jdbc.queryForObject(
+            """
+      SELECT COUNT(*) FROM dbo.stage_candidate candidate JOIN dbo.recruitment_stage stage ON stage.stage_id=candidate.stage_id
+      WHERE stage.job_id=? AND stage.stage_type='WRITTEN' AND candidate.application_id=? AND candidate.result_status='PASSED'
+      """,
+            Integer.class,
+            jobId,
+            applicationId);
+    return count != null && count > 0;
+  }
+
   @Transactional
   public Map<String, Object> assignRolls(long eventId) {
     requireDraft(eventId);
@@ -160,7 +197,11 @@ public class RecruitmentExamService {
             "SELECT exam_candidate_id FROM dbo.recruitment_exam_candidate WHERE exam_event_id=? AND roll_number IS NULL",
             Long.class,
             eventId);
-    for (Long id : ids) jdbc.update("UPDATE dbo.recruitment_exam_candidate SET roll_number=? WHERE exam_candidate_id=?", nextRoll(), id);
+    for (Long id : ids)
+      jdbc.update(
+          "UPDATE dbo.recruitment_exam_candidate SET roll_number=? WHERE exam_candidate_id=?",
+          nextRoll(),
+          id);
     return Map.of("assigned", ids.size(), "examEventId", eventId);
   }
 
@@ -228,10 +269,13 @@ public class RecruitmentExamService {
             "SELECT exam_candidate_id FROM dbo.recruitment_exam_candidate WHERE exam_event_id=? ORDER BY roll_number,exam_candidate_id",
             Long.class,
             eventId);
-    int capacity = rooms.stream().mapToInt(row -> ((Number) value(row, "capacity")).intValue()).sum();
+    int capacity =
+        rooms.stream().mapToInt(row -> ((Number) value(row, "capacity")).intValue()).sum();
     if (capacity < candidates.size())
       throw bad("INSUFFICIENT_SEATS", "Room capacity is lower than the selected candidate count.");
-    jdbc.update("UPDATE dbo.recruitment_exam_candidate SET room_id=NULL,seat_number=NULL WHERE exam_event_id=?", eventId);
+    jdbc.update(
+        "UPDATE dbo.recruitment_exam_candidate SET room_id=NULL,seat_number=NULL WHERE exam_event_id=?",
+        eventId);
     int candidateIndex = 0;
     for (Map<String, Object> room : rooms) {
       long roomId = number(room, "room_id");
@@ -259,11 +303,14 @@ public class RecruitmentExamService {
             eventId);
     Integer candidates =
         jdbc.queryForObject(
-            "SELECT COUNT(*) FROM dbo.recruitment_exam_candidate WHERE exam_event_id=?", Integer.class, eventId);
+            "SELECT COUNT(*) FROM dbo.recruitment_exam_candidate WHERE exam_event_id=?",
+            Integer.class,
+            eventId);
     if (candidates == null || candidates == 0)
       throw bad("NO_EXAM_CANDIDATES", "Select candidates before generating admit cards.");
     if (incomplete != null && incomplete > 0)
-      throw bad("INCOMPLETE_SEAT_PLAN", "Assign every roll number, room and seat before generation.");
+      throw bad(
+          "INCOMPLETE_SEAT_PLAN", "Assign every roll number, room and seat before generation.");
     jdbc.update(
         "UPDATE dbo.recruitment_exam_candidate SET admit_card_generated_at=SYSUTCDATETIME() WHERE exam_event_id=?",
         eventId);
@@ -357,7 +404,10 @@ public class RecruitmentExamService {
 
   public Map<String, Object> adminCard(long candidateId) {
     List<Map<String, Object>> rows =
-        jdbc.queryForList(admitCardSql("candidate.exam_candidate_id=? AND candidate.admit_card_generated_at IS NOT NULL"), candidateId);
+        jdbc.queryForList(
+            admitCardSql(
+                "candidate.exam_candidate_id=? AND candidate.admit_card_generated_at IS NOT NULL"),
+            candidateId);
     if (rows.isEmpty()) throw notFound("Generated admit card was not found.");
     return rows.getFirst();
   }
@@ -408,7 +458,8 @@ public class RecruitmentExamService {
           LEFT JOIN dbo.application_profile_snapshot snapshot
             ON snapshot.application_id=application.application_id
          WHERE
-        """ + whereClause;
+        """
+        + whereClause;
   }
 
   public long myCardApplicationId(long candidateId) {
@@ -459,11 +510,15 @@ public class RecruitmentExamService {
       String roll = Integer.toString(100000 + RANDOM.nextInt(900000));
       Integer exists =
           jdbc.queryForObject(
-              "SELECT COUNT(*) FROM dbo.recruitment_exam_candidate WHERE roll_number=?", Integer.class, roll);
+              "SELECT COUNT(*) FROM dbo.recruitment_exam_candidate WHERE roll_number=?",
+              Integer.class,
+              roll);
       if (exists != null && exists == 0) return roll;
     }
     throw new ApiException(
-        HttpStatus.CONFLICT, "ROLL_NUMBER_EXHAUSTED", "A unique roll number could not be assigned.");
+        HttpStatus.CONFLICT,
+        "ROLL_NUMBER_EXHAUSTED",
+        "A unique roll number could not be assigned.");
   }
 
   private Map<String, Object> requireDraft(long eventId) {
@@ -488,7 +543,8 @@ public class RecruitmentExamService {
 
   private void requireJob(long jobId) {
     Integer count =
-        jdbc.queryForObject("SELECT COUNT(*) FROM dbo.job_posting WHERE job_id=?", Integer.class, jobId);
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM dbo.job_posting WHERE job_id=?", Integer.class, jobId);
     if (count == null || count == 0) throw notFound("Job was not found.");
   }
 
@@ -506,15 +562,6 @@ public class RecruitmentExamService {
     return Objects.requireNonNull(keys.getKey()).longValue();
   }
 
-  private void audit(long userId, String action, String entityType, long entityId) {
-    jdbc.update(
-        "INSERT dbo.audit_log(actor_user_id,action,entity_type,entity_id,correlation_id) VALUES (?,?,?,?,NEWID())",
-        userId,
-        action,
-        entityType,
-        Long.toString(entityId));
-  }
-
   private static Object value(Map<String, Object> row, String key) {
     Object result = row.get(key);
     return result != null ? result : row.get(key.toUpperCase(Locale.ROOT));
@@ -522,6 +569,11 @@ public class RecruitmentExamService {
 
   private static long number(Map<String, Object> row, String key) {
     return ((Number) Objects.requireNonNull(value(row, key))).longValue();
+  }
+
+  private static Long nullableNumber(Map<String, Object> row, String key) {
+    Object result = value(row, key);
+    return result instanceof Number number ? number.longValue() : null;
   }
 
   private static String clean(String value) {

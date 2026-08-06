@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title id="jobFormDocumentTitle">Create job | Career Portal Administration</title>
+    <title id="jobFormDocumentTitle">
+      Create job | Career Portal Administration
+    </title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
     <link rel="stylesheet" th:href="@{/css/app.css(v=14)}" />
   </head>
@@ -17,7 +19,9 @@
           <div>
             <span class="page-kicker">Job management</span>
             <h1 id="jobFormTitle">Create a job posting</h1>
-            <p id="jobFormDescription">The backend assigns creator, state, and workflow timestamps.</p>
+            <p id="jobFormDescription">
+              The backend assigns creator, state, and workflow timestamps.
+            </p>
           </div>
           <a class="btn btn-secondary" th:href="@{/admin/jobs}">
             Back to jobs
@@ -74,7 +78,11 @@
             </div>
             <div class="field">
               <label>Salary</label>
-              <input name="salaryDetails" maxlength="200" placeholder="As per bank policy" />
+              <input
+                name="salaryDetails"
+                maxlength="200"
+                placeholder="As per bank policy"
+              />
             </div>
             <div class="field">
               <label>Job publication *</label>
@@ -118,10 +126,16 @@
           </div>
           <div id="educationRequirements" class="requirements-panel" hidden>
             <div class="requirement-row requirement-labels" aria-hidden="true">
-              <span>Education level</span><span>Matching</span><span>Minimum GPA/division</span><span>Result type</span><span></span>
+              <span>Education level</span><span>Matching</span
+              ><span>Minimum GPA/division</span><span>Result type</span
+              ><span></span>
             </div>
             <div id="educationRequirementRows"></div>
-            <button class="btn btn-secondary" id="addEducationRequirement" type="button">
+            <button
+              class="btn btn-secondary"
+              id="addEducationRequirement"
+              type="button"
+            >
               Add education requirement
             </button>
           </div>
@@ -133,17 +147,33 @@
                 Existing employee
               </label>
               <label class="check-option">
-                <input name="externalApplicantEligible" type="checkbox" checked />
+                <input
+                  name="externalApplicantEligible"
+                  type="checkbox"
+                  checked
+                />
                 External applicant
               </label>
             </fieldset>
             <div class="field" data-age-field="existing">
               <label>Max age for existing employee</label>
-              <input name="existingEmployeeMaxAge" type="number" min="1" max="100" />
+              <input
+                name="existingEmployeeMaxAge"
+                type="number"
+                min="1"
+                max="100"
+              />
             </div>
             <div class="field" data-age-field="external">
               <label>Max age for external applicant *</label>
-              <input name="externalApplicantMaxAge" type="number" min="1" max="100" value="32" required />
+              <input
+                name="externalApplicantMaxAge"
+                type="number"
+                min="1"
+                max="100"
+                value="32"
+                required
+              />
             </div>
             <div class="field full">
               <label>Maximum designation</label>
@@ -159,8 +189,10 @@
             <label class="check-option">
               <input name="multipleApplicationRestricted" type="checkbox" />
               <span>
-                <strong>Do not allow multiple position applications</strong><br />
-                When checked, an applicant who has already submitted an application cannot apply to another position.
+                <strong>Do not allow multiple position applications</strong
+                ><br />
+                When checked, an applicant who has already submitted an
+                application cannot apply to another position.
               </span>
             </label>
           </div>
@@ -170,11 +202,36 @@
             <h2>Required declarations and information</h2>
           </div>
           <div class="flag-card-grid">
-            <label class="flag-card"><input name="spouseDataRequired" type="checkbox" /><span><strong>Spouse data</strong><small>Ask applicants for spouse information</small></span></label>
-            <label class="flag-card"><input name="mobileRequired" type="checkbox" checked /><span><strong>Mobile</strong><small>Require a mobile contact</small></span></label>
-            <label class="flag-card"><input name="emailRequired" type="checkbox" checked /><span><strong>Email</strong><small>Require an email contact</small></span></label>
-            <label class="flag-card"><input name="relativeDeclarationRequired" type="checkbox" /><span><strong>Relative in UBL</strong><small>Require a relative declaration</small></span></label>
-            <label class="flag-card"><input name="coverLetterCvRequired" type="checkbox" /><span><strong>Cover letter &amp; CV</strong><small>Require both with the application</small></span></label>
+            <label class="flag-card"
+              ><input name="spouseDataRequired" type="checkbox" /><span
+                ><strong>Spouse data</strong
+                ><small>Ask applicants for spouse information</small></span
+              ></label
+            >
+            <label class="flag-card"
+              ><input name="mobileRequired" type="checkbox" checked /><span
+                ><strong>Mobile</strong
+                ><small>Require a mobile contact</small></span
+              ></label
+            >
+            <label class="flag-card"
+              ><input name="emailRequired" type="checkbox" checked /><span
+                ><strong>Email</strong
+                ><small>Require an email contact</small></span
+              ></label
+            >
+            <label class="flag-card"
+              ><input name="relativeDeclarationRequired" type="checkbox" /><span
+                ><strong>Relative in UBL</strong
+                ><small>Require a relative declaration</small></span
+              ></label
+            >
+            <label class="flag-card"
+              ><input name="coverLetterCvRequired" type="checkbox" /><span
+                ><strong>Cover letter &amp; CV</strong
+                ><small>Require both with the application</small></span
+              ></label
+            >
           </div>
 
           <div class="form-section-head">
@@ -203,18 +260,30 @@
                 required
               ></textarea>
               <span class="hint">
-                The short heading applicants will see at the top of this job's application page.
+                The short heading applicants will see at the top of this job's
+                application page.
               </span>
             </div>
             <div class="field full">
               <label>Circular letter</label>
-              <input name="circularLetter" type="file" accept=".pdf,application/pdf" />
-              <span class="hint">PDF only, maximum 5 MB. Applicants can view and download it.</span>
+              <input
+                name="circularLetter"
+                type="file"
+                accept=".pdf,application/pdf"
+              />
+              <span class="hint"
+                >PDF only, maximum 5 MB. Applicants can view and download
+                it.</span
+              >
             </div>
           </div>
           <div class="form-footer">
-            <span class="hint" id="jobFormHint">The new job starts in DRAFT state.</span>
-            <button class="btn btn-primary" id="jobFormSubmit" type="submit">Create job</button>
+            <span class="hint" id="jobFormHint"
+              >The new job starts in DRAFT state.</span
+            >
+            <button class="btn btn-primary" id="jobFormSubmit" type="submit">
+              Create job
+            </button>
           </div>
         </form>
       </main>

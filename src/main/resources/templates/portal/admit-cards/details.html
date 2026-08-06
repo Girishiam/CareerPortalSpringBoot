@@ -1,26 +1,69 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Admit Card | Uttara Bank Career Portal</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=15)}" /></head>
-  <body class="admin-body admit-card-page" data-portal-page="admit-card-details">
-    <div class="screen-only"><header th:replace="~{portal/fragments/header :: header}"></header></div>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=15)}" />
+  </head>
+  <body
+    class="admin-body admit-card-page"
+    data-portal-page="admit-card-details"
+  >
+    <div class="screen-only">
+      <header th:replace="~{portal/fragments/header :: header}"></header>
+    </div>
     <main class="admit-card-shell">
-      <div class="screen-only admit-actions"><a class="back-link" href="/portal/admit-cards">← Back to admit cards</a>
-        <button class="btn btn-primary" id="printAdmitCard">Print / save as PDF</button></div>
+      <div class="screen-only admit-actions">
+        <a class="back-link" href="/portal/admit-cards"
+          >← Back to admit cards</a
+        >
+        <button class="btn btn-primary" id="printAdmitCard">
+          Print / save as PDF
+        </button>
+      </div>
       <article class="admit-card" id="admitCard">
-        <header class="admit-brand"><img class="admit-logo" src="/images/logo/uttara-bank-logo.png" alt="Uttara Bank PLC" />
-          <div class="admit-heading"><h1>Admit Card</h1><strong id="cardExamType"></strong></div></header>
+        <header class="admit-brand">
+          <img
+            class="admit-logo"
+            src="/images/logo/uttara-bank-logo.png"
+            alt="Uttara Bank PLC"
+          />
+          <div class="admit-heading">
+            <h1>Admit Card</h1>
+            <strong id="cardExamType"></strong>
+          </div>
+        </header>
         <section class="admit-identity">
-          <div class="admit-candidate"><h2 id="cardName"></h2><div class="roll-box"><span>Roll number</span><strong id="cardRoll"></strong></div></div>
-          <div class="admit-photo"><img id="cardPhoto" alt="Applicant photo" /><span>Applicant's photograph</span></div>
+          <div class="admit-candidate">
+            <h2 id="cardName"></h2>
+            <div class="roll-box">
+              <span>Roll number</span><strong id="cardRoll"></strong>
+            </div>
+          </div>
+          <div class="admit-photo">
+            <img id="cardPhoto" alt="Applicant photo" /><span
+              >Applicant's photograph</span
+            >
+          </div>
         </section>
         <section class="admit-details" id="cardDetails"></section>
-        <section class="admit-instructions"><h2>Instructions to candidates</h2><div id="cardInstructions"></div></section>
-        <section class="admit-signature"><img id="cardSignature" alt="Applicant signature" /><span>Applicant's signature</span></section>
-        <footer>This computer-generated admit card is valid only for the examination stated above.</footer>
+        <section class="admit-instructions">
+          <h2>Instructions to candidates</h2>
+          <div id="cardInstructions"></div>
+        </section>
+        <section class="admit-signature">
+          <img id="cardSignature" alt="Applicant signature" /><span
+            >Applicant's signature</span
+          >
+        </section>
+        <footer>
+          This computer-generated admit card is valid only for the examination
+          stated above.
+        </footer>
       </article>
-    </main><script th:src="@{/js/portal.js(v=10)}"></script>
+    </main>
+    <script th:src="@{/js/portal.js(v=11)}"></script>
   </body>
 </html>

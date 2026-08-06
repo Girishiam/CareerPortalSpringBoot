@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dashboard | Career Portal Administration</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=14)}" />
   </head>
   <body class="admin-body" data-admin-page="dashboard">
     <header th:replace="~{admin/fragments/header :: header}"></header>
@@ -49,6 +49,35 @@
         <article class="card">
           <div class="card-heading">
             <div>
+              <span class="page-kicker">Job-wise applicants</span>
+              <h2>Applications received by job</h2>
+              <p>Counts include submitted applications only.</p>
+            </div>
+            <a class="text-button" th:href="@{/admin/applications}"
+              >View applicants</a
+            >
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Job</th>
+                  <th>Status</th>
+                  <th>Vacancies</th>
+                  <th>Applicants</th>
+                  <th>Eligible</th>
+                  <th>Ineligible</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="jobApplicantRows"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-heading">
+            <div>
               <span class="page-kicker">Latest activity</span>
               <h2>Recent applications</h2>
             </div>
@@ -70,6 +99,6 @@
         </article>
       </main>
     </div>
-    <script th:src="@{/js/admin.js(v=3)}"></script>
+    <script th:src="@{/js/admin.js(v=28)}"></script>
   </body>
 </html>

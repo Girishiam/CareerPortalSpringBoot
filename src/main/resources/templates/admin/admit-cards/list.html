@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
-    <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Admit Cards | Career Portal Administration</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
     <link rel="stylesheet" th:href="@{/css/app.css(v=14)}" />
@@ -9,23 +10,45 @@
   <body class="admin-body" data-admin-page="admit-cards">
     <header th:replace="~{admin/fragments/header :: header}"></header>
     <div class="admin-shell">
-      <aside th:replace="~{admin/fragments/sidebar :: sidebar('admit-cards')}"></aside>
+      <aside
+        th:replace="~{admin/fragments/sidebar :: sidebar('admit-cards')}"
+      ></aside>
       <main class="admin-main">
         <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
         <div class="page-head">
-          <div><span class="page-kicker">Recruitment operations</span><h1>Admit cards</h1>
-            <p>Find and download generated admit cards on behalf of applicants.</p></div>
+          <div>
+            <span class="page-kicker">Recruitment operations</span>
+            <h1>Admit cards</h1>
+            <p>
+              Find and download generated admit cards on behalf of applicants.
+            </p>
+          </div>
         </div>
         <section class="card">
           <div class="field">
             <label for="admitCardJob">Job</label>
-            <select id="admitCardJob"><option value="">All jobs</option></select>
+            <select id="admitCardJob">
+              <option value="">All jobs</option>
+            </select>
           </div>
         </section>
         <section class="card">
-          <div class="table-wrap"><table class="data-table"><thead><tr>
-            <th>Candidate</th><th>Job</th><th>Exam</th><th>Roll</th><th>Center / seat</th><th>Status</th><th>Action</th>
-          </tr></thead><tbody id="adminAdmitCardRows"></tbody></table></div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Candidate</th>
+                  <th>Job</th>
+                  <th>Exam</th>
+                  <th>Roll</th>
+                  <th>Center / seat</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="adminAdmitCardRows"></tbody>
+            </table>
+          </div>
         </section>
       </main>
     </div>

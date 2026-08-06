@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -117,6 +118,22 @@ public class GlobalExceptionHandler {
         ex);
   }
 
+  @ExceptionHandler(CannotGetJdbcConnectionException.class)
+  ResponseEntity<ApiError> databaseUnavailable(
+      CannotGetJdbcConnectionException ex, HttpServletRequest request) {
+    String correlation = Objects.toString(request.getAttribute(CorrelationIdFilter.ATTRIBUTE), "");
+    log.error("Database unavailable. correlationId={}", correlation, ex);
+    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+        .header(HttpHeaders.RETRY_AFTER, "3")
+        .body(
+            error(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "DATABASE_UNAVAILABLE",
+                "The database is temporarily unavailable. Please try again shortly.",
+                List.of(),
+                request));
+  }
+
   @ExceptionHandler(Exception.class)
   ResponseEntity<ApiError> unexpected(Exception ex, HttpServletRequest request) {
     log.error(
@@ -191,11 +208,19 @@ public class GlobalExceptionHandler {
       String message,
       List<ApiError.FieldError> fields,
       HttpServletRequest request) {
+    return ResponseEntity.status(status).body(error(status, code, message, fields, request));
+  }
+
+  private ApiError error(
+      HttpStatus status,
+      String code,
+      String message,
+      List<ApiError.FieldError> fields,
+      HttpServletRequest request) {
     String correlation =
         Optional.ofNullable(request.getAttribute(CorrelationIdFilter.ATTRIBUTE))
             .map(Object::toString)
             .orElseGet(() -> UUID.randomUUID().toString());
-    return ResponseEntity.status(status)
-        .body(new ApiError(status.value(), code, message, fields, correlation, Instant.now()));
+    return new ApiError(status.value(), code, message, fields, correlation, Instant.now());
   }
 }

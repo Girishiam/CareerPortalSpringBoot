@@ -19,7 +19,11 @@
   <body>
     <main class="auth-page">
       <section class="auth-panel">
-        <a class="brand auth-brand" th:href="@{/admin/login}" href="/admin/login">
+        <a
+          class="brand auth-brand"
+          th:href="@{/admin/login}"
+          href="/admin/login"
+        >
           <img
             class="brand-image"
             th:src="@{/images/logo/uttara-bank-logo.png}"
@@ -34,10 +38,7 @@
           <h1>Admin portal sign in.</h1>
           <p>Use your authorized bank administrator account to continue.</p>
           <div id="alert" class="alert" role="alert"></div>
-          <form
-            id="loginForm"
-            data-login-endpoint="/api/v1/auth/admins/login"
-          >
+          <form id="loginForm" data-login-endpoint="/api/v1/auth/admins/login">
             <div class="form-grid">
               <div class="field full">
                 <label for="login">Email, employee ID or username</label>
@@ -89,15 +90,24 @@
           <div class="feature-list">
             <div>
               <span>01</span>
-              <p><strong>Job management</strong><small>Create and publish vacancies</small></p>
+              <p>
+                <strong>Job management</strong
+                ><small>Create and publish vacancies</small>
+              </p>
             </div>
             <div>
               <span>02</span>
-              <p><strong>Application review</strong><small>Track candidates consistently</small></p>
+              <p>
+                <strong>Application review</strong
+                ><small>Track candidates consistently</small>
+              </p>
             </div>
             <div>
               <span>03</span>
-              <p><strong>Controlled access</strong><small>Authorized administrators only</small></p>
+              <p>
+                <strong>Controlled access</strong
+                ><small>Authorized administrators only</small>
+              </p>
             </div>
           </div>
         </div>

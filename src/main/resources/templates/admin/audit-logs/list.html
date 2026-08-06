@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Site activity logs | Career Portal Administration</title>
+    <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20)}" />
+  </head>
+  <body class="admin-body" data-admin-page="audit-logs">
+    <header th:replace="~{admin/fragments/header :: header}"></header>
+    <div class="admin-shell">
+      <aside
+        th:replace="~{admin/fragments/sidebar :: sidebar('audit-logs')}"
+      ></aside>
+      <main class="admin-main">
+        <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+        <div class="page-head">
+          <div>
+            <span class="page-kicker">Security and accountability</span>
+            <h1>Site activity logs</h1>
+            <p>
+              Review API activity across the admin and applicant portals,
+              including authentication attempts, failures, searches and
+              downloads.
+            </p>
+          </div>
+        </div>
+        <form class="card form-grid audit-log-filters" id="auditLogFilters">
+          <label class="field"
+            ><span>General search</span
+            ><input
+              id="auditQuery"
+              maxlength="200"
+              placeholder="Name, email, action, entity or correlation ID"
+          /></label>
+          <label class="field"
+            ><span>User ID</span><input id="auditUserId" type="number" min="1"
+          /></label>
+          <label class="field"
+            ><span>User email</span
+            ><input id="auditEmail" type="search" maxlength="254"
+          /></label>
+          <label class="field"
+            ><span>Actor</span
+            ><select id="auditActorType">
+              <option value="ALL">All actors</option>
+              <option value="ADMIN">Administrators</option>
+              <option value="APPLICANT">Applicants</option>
+              <option value="ANONYMOUS">Anonymous</option>
+            </select></label
+          >
+          <label class="field"
+            ><span>Category</span
+            ><select id="auditCategory">
+              <option value="">All categories</option>
+              <option>ADMIN</option>
+              <option>APPLICANT</option>
+              <option>AUTH</option>
+              <option>PUBLIC</option>
+            </select></label
+          >
+          <label class="field"
+            ><span>Action</span
+            ><input
+              id="auditAction"
+              type="search"
+              maxlength="100"
+              placeholder="PUBLISH_JOB"
+          /></label>
+          <label class="field"
+            ><span>Entity type</span
+            ><input
+              id="auditEntityType"
+              type="search"
+              maxlength="80"
+              placeholder="JOBS"
+          /></label>
+          <label class="field"
+            ><span>Entity ID</span
+            ><input id="auditEntityId" type="search" maxlength="100"
+          /></label>
+          <label class="field"
+            ><span>IP address</span
+            ><input id="auditIp" type="search" maxlength="100"
+          /></label>
+          <label class="field"
+            ><span>HTTP method</span
+            ><select id="auditMethod">
+              <option value="">All methods</option>
+              <option>GET</option>
+              <option>POST</option>
+              <option>PUT</option>
+              <option>PATCH</option>
+              <option>DELETE</option>
+            </select></label
+          >
+          <label class="field"
+            ><span>HTTP status</span
+            ><input id="auditStatus" type="number" min="100" max="599"
+          /></label>
+          <label class="field"
+            ><span>Outcome</span
+            ><select id="auditSuccess">
+              <option value="">All outcomes</option>
+              <option value="true">Successful</option>
+              <option value="false">Failed</option>
+            </select></label
+          >
+          <label class="field"
+            ><span>From</span><input id="auditFrom" type="date"
+          /></label>
+          <label class="field"
+            ><span>To</span><input id="auditTo" type="date"
+          /></label>
+          <div class="button-row">
+            <button class="btn btn-primary" type="submit">Search logs</button
+            ><button
+              class="btn btn-secondary"
+              id="resetAuditFilters"
+              type="button"
+            >
+              Reset</button
+            ><button
+              class="btn btn-secondary"
+              id="printAuditLogs"
+              type="button"
+            >
+              Print filtered logs
+            </button>
+          </div>
+        </form>
+        <article class="card">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Executed</th>
+                  <th>Actor</th>
+                  <th>Activity</th>
+                  <th>Target</th>
+                  <th>Source</th>
+                  <th>Request</th>
+                  <th>Duration</th>
+                  <th>Correlation ID</th>
+                </tr>
+              </thead>
+              <tbody id="auditLogRows"></tbody>
+            </table>
+          </div>
+          <nav th:replace="~{admin/fragments/pagination :: pagination}"></nav>
+        </article>
+      </main>
+    </div>
+    <script th:src="@{/js/admin.js(v=26)}"></script>
+  </body>
+</html>

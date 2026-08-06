@@ -18,6 +18,13 @@
         </a>
         <a
           class="nav-link"
+          th:classappend="${activePage == 'shortlists'} ? ' active'"
+          th:href="@{/admin/shortlists}"
+          href="/admin/shortlists"
+          >Shortlists &amp; stages</a
+        >
+        <a
+          class="nav-link"
           th:classappend="${activePage == 'jobs'} ? ' active'"
           th:href="@{/admin/jobs}"
           href="/admin/jobs"
@@ -63,6 +70,14 @@
           href="/admin/users"
         >
           Users
+        </a>
+        <a
+          class="nav-link"
+          th:classappend="${activePage == 'audit-logs'} ? ' active'"
+          th:href="@{/admin/audit-logs}"
+          href="/admin/audit-logs"
+        >
+          Audit logs
         </a>
       </nav>
 

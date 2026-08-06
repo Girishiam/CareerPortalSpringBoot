@@ -57,8 +57,7 @@ public class DocumentService {
       byte[] bytes = upload.getBytes();
       if (bytes.length == 0 || bytes.length > max)
         throw bad("INVALID_FILE_SIZE", "File is empty or exceeds the size limit.");
-      if (Set.of("PHOTO", "SIGNATURE").contains(type)
-          && bytes.length > PROFILE_IMAGE_MAX_BYTES)
+      if (Set.of("PHOTO", "SIGNATURE").contains(type) && bytes.length > PROFILE_IMAGE_MAX_BYTES)
         throw bad("INVALID_FILE_SIZE", "Photo and signature files must not exceed 1 MB.");
       String media = detect(bytes);
       Integer width = null, height = null;
@@ -156,8 +155,11 @@ public class DocumentService {
     } catch (ApiException e) {
       throw e;
     } catch (Exception e) {
-      log.error("Document upload failed. documentType={} filename={}", rawType,
-          upload.getOriginalFilename(), e);
+      log.error(
+          "Document upload failed. documentType={} filename={}",
+          rawType,
+          upload.getOriginalFilename(),
+          e);
       throw new ApiException(
           HttpStatus.BAD_REQUEST,
           "FILE_PROCESSING_FAILED",
@@ -192,8 +194,7 @@ public class DocumentService {
       Path file = root.resolve(row.get("storage_key").toString()).normalize();
       if (!file.startsWith(root) || !Files.isRegularFile(file))
         throw new IOException("Stored file is unavailable.");
-      return new DocumentContent(
-          row.get("media_type").toString(), Files.readAllBytes(file));
+      return new DocumentContent(row.get("media_type").toString(), Files.readAllBytes(file));
     } catch (IOException exception) {
       throw new ApiException(
           HttpStatus.NOT_FOUND, "DOCUMENT_NOT_FOUND", "Document file is unavailable.");

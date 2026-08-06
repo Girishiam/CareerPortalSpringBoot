@@ -166,16 +166,20 @@ public class ApplicantController {
 
   public record ProfileRequest(
       @NotBlank @Size(max = 150) String fullName,
-      @Size(max = 150) String fatherName,
-      @Size(max = 150) String motherName,
-      @Past LocalDate dateOfBirth,
-      String gender,
-      String maritalStatus,
-      @Size(max = 50) String nationality,
-      @Pattern(regexp = "^[0-9 .-]*$", message = "NID contains unsupported characters.") String nidNumber,
-      @Pattern(regexp = "^[A-Za-z0-9 -]*$", message = "Passport number contains unsupported characters.") String passportNumber,
-      @Email String email,
-      @Pattern(regexp = "^01[3-9]\\d{8}$") String mobile) {}
+      @NotBlank @Size(max = 150) String fatherName,
+      @NotBlank @Size(max = 150) String motherName,
+      @NotNull @Past LocalDate dateOfBirth,
+      @NotBlank @Pattern(regexp = "MALE|FEMALE|OTHER") String gender,
+      @NotBlank @Pattern(regexp = "UNMARRIED|MARRIED") String maritalStatus,
+      @NotBlank @Size(max = 50) String nationality,
+      @NotBlank @Pattern(regexp = "^[0-9 .-]+$", message = "NID contains unsupported characters.")
+          String nidNumber,
+      @Pattern(
+              regexp = "^[A-Za-z0-9 -]*$",
+              message = "Passport number contains unsupported characters.")
+          String passportNumber,
+      @NotBlank @Email String email,
+      @NotBlank @Pattern(regexp = "^01[3-9]\\d{8}$") String mobile) {}
 
   public record AddressRequest(
       @NotBlank @Size(max = 300) String addressLine,
@@ -186,8 +190,10 @@ public class ApplicantController {
 
   public record EducationRequest(
       @Positive long qualificationId,
-      Long subjectId,
-      Long institutionId,
+      @Size(max = 200) String qualificationName,
+      @NotNull @Positive Long subjectId,
+      @Size(max = 200) String subjectName,
+      @NotNull @Positive Long institutionId,
       @Size(max = 200) String institutionName,
       @NotBlank String resultType,
       BigDecimal resultValue,

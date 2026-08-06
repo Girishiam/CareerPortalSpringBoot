@@ -3,6 +3,7 @@ package com.uttarabank.careerportal.job;
 import com.uttarabank.careerportal.common.ApiException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import org.springframework.cache.annotation.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class JobCircularService {
   }
 
   @Transactional
+  @CacheEvict(cacheNames = "publicJobs", allEntries = true)
   public Map<String, Object> save(long jobId, MultipartFile upload) {
     Integer job =
         jdbc.queryForObject(
@@ -29,8 +31,7 @@ public class JobCircularService {
       byte[] bytes = upload.getBytes();
       if (bytes.length == 0 || bytes.length > MAX_BYTES)
         throw bad("INVALID_FILE_SIZE", "Circular PDF must not exceed 5 MB.");
-      if (bytes.length < 5
-          || !new String(bytes, 0, 5, StandardCharsets.US_ASCII).equals("%PDF-"))
+      if (bytes.length < 5 || !new String(bytes, 0, 5, StandardCharsets.US_ASCII).equals("%PDF-"))
         throw bad("INVALID_FILE_TYPE", "Circular letter must be a valid PDF file.");
       String name = safeName(upload.getOriginalFilename());
       jdbc.update("DELETE dbo.job_circular_pdf WHERE job_id=?", jobId);
@@ -40,8 +41,7 @@ public class JobCircularService {
           name,
           bytes.length,
           bytes);
-      jdbc.update(
-          "UPDATE dbo.job_posting SET circular_letter_name=? WHERE job_id=?", name, jobId);
+      jdbc.update("UPDATE dbo.job_posting SET circular_letter_name=? WHERE job_id=?", name, jobId);
       return Map.of("jobId", jobId, "originalName", name, "sizeBytes", bytes.length);
     } catch (ApiException exception) {
       throw exception;
@@ -56,8 +56,7 @@ public class JobCircularService {
             "SELECT original_name,media_type,file_content FROM dbo.job_circular_pdf WHERE job_id=?",
             jobId);
     if (rows.isEmpty())
-      throw new ApiException(
-          HttpStatus.NOT_FOUND, "CIRCULAR_NOT_FOUND", "Circular PDF not found.");
+      throw new ApiException(HttpStatus.NOT_FOUND, "CIRCULAR_NOT_FOUND", "Circular PDF not found.");
     Map<String, Object> row = rows.getFirst();
     return new CircularFile(
         row.get("original_name").toString(),

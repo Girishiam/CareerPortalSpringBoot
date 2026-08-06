@@ -22,6 +22,44 @@ if (!token) {
   window.location.replace("/login");
 }
 
+function redirectToApplicantLogin() {
+  localStorage.removeItem("careerPortalToken");
+  localStorage.removeItem("careerPortalRoles");
+  window.location.replace("/login");
+}
+
+function scheduleSessionExpiry() {
+  try {
+    const encoded = token
+      .split(".")[1]
+      .replaceAll("-", "+")
+      .replaceAll("_", "/");
+    const padded = encoded.padEnd(Math.ceil(encoded.length / 4) * 4, "=");
+    const payload = JSON.parse(
+      decodeURIComponent(
+        atob(padded)
+          .split("")
+          .map(
+            (character) =>
+              `%${character.charCodeAt(0).toString(16).padStart(2, "0")}`,
+          )
+          .join(""),
+      ),
+    );
+    const remaining = Number(payload.exp) * 1000 - Date.now();
+    if (!Number.isFinite(remaining) || remaining <= 0)
+      return redirectToApplicantLogin();
+    window.setTimeout(
+      redirectToApplicantLogin,
+      Math.min(remaining, 2_147_483_647),
+    );
+  } catch {
+    redirectToApplicantLogin();
+  }
+}
+
+if (token) scheduleSessionExpiry();
+
 function column(row, name) {
   return row?.[name] ?? row?.[name.toUpperCase()];
 }
@@ -101,6 +139,25 @@ function notify(message, type = "success") {
 }
 
 async function api(url, options = {}) {
+  const method = (options.method || "GET").toUpperCase();
+  const cacheSeconds =
+    method === "GET"
+      ? url.startsWith("/api/v1/master-data/")
+        ? 1800
+        : url === "/api/v1/jobs"
+          ? 10
+          : 0
+      : 0;
+  const cacheKey = cacheSeconds ? `careerPortalApiCache:${url}` : null;
+  if (cacheKey) {
+    try {
+      const cached = JSON.parse(sessionStorage.getItem(cacheKey));
+      if (cached?.expiresAt > Date.now()) return cached.value;
+      sessionStorage.removeItem(cacheKey);
+    } catch {
+      sessionStorage.removeItem(cacheKey);
+    }
+  }
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -109,15 +166,26 @@ async function api(url, options = {}) {
     },
   });
   if (response.status === 401) {
-    localStorage.removeItem("careerPortalToken");
-    localStorage.removeItem("careerPortalRoles");
-    window.location.replace("/login");
+    redirectToApplicantLogin();
     throw new Error("Your session has expired.");
   }
   const payload =
     response.status === 204 ? null : await response.json().catch(() => null);
   if (!response.ok) {
     throw new Error(payload?.message || "The request could not be completed.");
+  }
+  if (cacheKey) {
+    try {
+      sessionStorage.setItem(
+        cacheKey,
+        JSON.stringify({
+          expiresAt: Date.now() + cacheSeconds * 1000,
+          value: payload,
+        }),
+      );
+    } catch {
+      /* Browser storage may be unavailable. */
+    }
   }
   return payload;
 }
@@ -128,9 +196,7 @@ async function loadAuthenticatedImage(image, url) {
     cache: "no-store",
   });
   if (response.status === 401) {
-    localStorage.removeItem("careerPortalToken");
-    localStorage.removeItem("careerPortalRoles");
-    window.location.replace("/login");
+    redirectToApplicantLogin();
     throw new Error("Your session has expired.");
   }
   if (!response.ok) throw new Error("The uploaded image could not be loaded.");
@@ -237,11 +303,18 @@ async function initDashboard(profile) {
   setText("#educationCount", educations.length);
   setText("#experienceCount", experiences.length);
 
+  document.querySelector("#incompleteCvPanel").hidden = Boolean(cv.complete);
+  document.querySelector("#completedCvPanel").hidden = !cv.complete;
+  setText(
+    "#cvDocumentName",
+    column(cvProfile, "full_name")
+      ? `${column(cvProfile, "full_name")} — Curriculum Vitae`
+      : "Curriculum Vitae",
+  );
+
   const readiness = document.querySelector("#cvReadiness");
   readiness.className = `cv-status ${cv.complete ? "complete" : "incomplete"}`;
-  readiness.innerHTML = cv.complete
-    ? `<strong>CV complete</strong><span>You can now apply to open positions.</span>`
-    : `<strong>CV incomplete</strong><span>Complete the fields below before applying.</span>`;
+  readiness.innerHTML = `<strong>${escapeHtml(cv.completionPercentage ?? 0)}% complete</strong><span>${cv.complete ? "Your CV is ready. You can now apply to open positions." : `${escapeHtml(cv.completedRequired ?? 0)} of ${escapeHtml(cv.totalRequired ?? 15)} required items completed.`}</span><div class="cv-progress-track"><span style="width:${Number(cv.completionPercentage || 0)}%"></span></div>`;
   document.querySelector("#missingFieldList").innerHTML = cv.complete
     ? ""
     : cv.missingFields
@@ -269,7 +342,12 @@ async function initDashboard(profile) {
     ["Full name", column(cvProfile, "full_name")],
     ["Father's name", column(cvProfile, "father_name")],
     ["Mother's name", column(cvProfile, "mother_name")],
-    ["Date of birth", column(cvProfile, "date_of_birth") ? formatDate(column(cvProfile, "date_of_birth")) : null],
+    [
+      "Date of birth",
+      column(cvProfile, "date_of_birth")
+        ? formatDate(column(cvProfile, "date_of_birth"))
+        : null,
+    ],
     ["Gender", column(cvProfile, "gender")],
     ["Marital status", column(cvProfile, "marital_status")],
     ["Nationality", column(cvProfile, "nationality")],
@@ -289,39 +367,89 @@ async function initDashboard(profile) {
       ? rows.map(renderer).join("")
       : notFilled;
   };
-  renderCollection("#cvAddresses", cv.addresses || [], (row) => `
+  renderCollection(
+    "#cvAddresses",
+    cv.addresses || [],
+    (row) => `
     <div class="cv-entry"><h4>${display(column(row, "address_type"))} address</h4>
     <p>${value(column(row, "address_line"))}</p>
-    <p>${[column(row, "upazila_name"), column(row, "district_name"), column(row, "division_name"), column(row, "postcode")].filter(Boolean).map(escapeHtml).join(", ") || notFilled}</p></div>`);
-  renderCollection("#cvEducations", educations, (row) => `
-    <div class="cv-entry"><h4>${value(column(row, "qualification_name"))}</h4>
-    <p>${value(column(row, "subject_name"))} · ${value(column(row, "institution_display_name"))}</p>
-    <p>${value(column(row, "result_type"))}: ${value(column(row, "result_value") ?? column(row, "result_grade"))} · Passing year: ${value(column(row, "passing_year"))}</p></div>`);
-  renderCollection("#cvExperiences", experiences, (row) => `
+    <p>${[column(row, "upazila_name"), column(row, "district_name"), column(row, "division_name"), column(row, "postcode")].filter(Boolean).map(escapeHtml).join(", ") || notFilled}</p></div>`,
+  );
+  renderCollection(
+    "#cvEducations",
+    educations,
+    (row) => `
+    <div class="cv-entry"><h4>${value(column(row, "qualification_display_name") ?? column(row, "qualification_name"))}</h4>
+    <p>${value(column(row, "subject_display_name") ?? column(row, "subject_name"))} · ${value(column(row, "institution_display_name"))}</p>
+    <p>${value(column(row, "result_type"))}: ${value(column(row, "result_value") ?? column(row, "result_grade"))} · Passing year: ${value(column(row, "passing_year"))}</p></div>`,
+  );
+  renderCollection(
+    "#cvExperiences",
+    experiences,
+    (row) => `
     <div class="cv-entry"><h4>${value(column(row, "designation"))}</h4>
     <p>${value(column(row, "employer_name"))}</p>
-    <p>${formatDate(column(row, "start_date"))} – ${column(row, "is_current") ? "Present" : formatDate(column(row, "end_date"))} · ${employmentDuration(column(row, "start_date"), column(row, "end_date"))}</p></div>`);
-  renderCollection("#cvTrainings", cv.trainings || [], (row) => `
-    <div class="cv-entry"><h4>${value(column(row, "training_title"))}</h4>
-    <p>${value(column(row, "training_summary"))} · ${column(row, "duration_months") ? `${column(row, "duration_months")} months` : notFilled}</p></div>`);
-  renderCollection("#cvLanguages", cv.languages || [], (row) => `
+    <p>${formatDate(column(row, "start_date"))} – ${column(row, "is_current") ? "Present" : formatDate(column(row, "end_date"))} · ${employmentDuration(column(row, "start_date"), column(row, "end_date"))}</p></div>`,
+  );
+  renderCollection("#cvTrainings", cv.trainings || [], (row) => {
+    const details = [
+      column(row, "training_summary"),
+      column(row, "duration_months")
+        ? `${column(row, "duration_months")} months`
+        : null,
+    ]
+      .filter(Boolean)
+      .map(display)
+      .join(" · ");
+    return `
+        <div class="cv-entry">
+          <h4>${value(column(row, "training_title"))}</h4>
+          ${details ? `<p>${details}</p>` : ""}
+        </div>`;
+  });
+  renderCollection(
+    "#cvLanguages",
+    cv.languages || [],
+    (row) => `
     <div class="cv-entry"><h4>${value(column(row, "language_name"))}</h4>
-    <p>Speaking: ${value(column(row, "speaking"))} · Writing: ${value(column(row, "writing"))} · Listening: ${value(column(row, "listening"))} · Reading: ${value(column(row, "reading"))}</p></div>`);
-  renderCollection("#cvActivities", cv.activities || [], (row) => `
-    <div class="cv-entry"><h4>${value(column(row, "activity_name"))}</h4>
-    <p>${value(column(row, "role_name"))} · ${value(column(row, "organization"))}</p>
-    <p>${value(column(row, "activity_summary"))}</p></div>`);
-  renderCollection("#cvReferences", cv.references || [], (row) => `
+    <p>Speaking: ${value(column(row, "speaking"))} · Writing: ${value(column(row, "writing"))} · Listening: ${value(column(row, "listening"))} · Reading: ${value(column(row, "reading"))}</p></div>`,
+  );
+  renderCollection("#cvActivities", cv.activities || [], (row) => {
+    const affiliation = [column(row, "role_name"), column(row, "organization")]
+      .filter(Boolean)
+      .map(display)
+      .join(" · ");
+    const details = [
+      column(row, "achievement"),
+      column(row, "activity_summary"),
+    ]
+      .filter(Boolean)
+      .map(display)
+      .join(" · ");
+    return `
+        <div class="cv-entry">
+          <h4>${value(column(row, "activity_name"))}</h4>
+          ${affiliation ? `<p>${affiliation}</p>` : ""}
+          ${details ? `<p>${details}</p>` : ""}
+        </div>`;
+  });
+  renderCollection(
+    "#cvReferences",
+    cv.references || [],
+    (row) => `
     <div class="cv-entry"><h4>${value(column(row, "full_name"))}</h4>
     <p>${value(column(row, "designation"))} · ${value(column(row, "organization"))}</p>
-    <p>${value(column(row, "email") ?? column(row, "mobile"))}</p></div>`);
+    <p>${value(column(row, "email") ?? column(row, "mobile"))}</p></div>`,
+  );
 
   const documents = new Map(
     (cv.documents || []).map((row) => [column(row, "document_type"), row]),
   );
   await Promise.all(
-    [["PHOTO", "#cvPhoto", "#cvPhotoMissing"], ["SIGNATURE", "#cvSignature", "#cvSignatureMissing"]]
-      .map(async ([type, imageSelector, missingSelector]) => {
+    [
+      ["PHOTO", "#cvPhoto", "#cvPhotoMissing"],
+      ["SIGNATURE", "#cvSignature", "#cvSignatureMissing"],
+    ].map(async ([type, imageSelector, missingSelector]) => {
       const image = document.querySelector(imageSelector);
       const missing = document.querySelector(missingSelector);
       const row = documents.get(type);
@@ -344,6 +472,34 @@ async function initDashboard(profile) {
   document.querySelector("#applicationList").innerHTML = applications.length
     ? applications.slice(0, 5).map(applicationCard).join("")
     : empty("You have not started an application yet.");
+}
+
+async function initCvStepper() {
+  const root = document.querySelector("[data-cv-stepper]");
+  if (!root) return;
+  const cv = await api("/api/v1/me/cv");
+  const percentage = Math.max(
+    0,
+    Math.min(100, Number(cv.completionPercentage || 0)),
+  );
+  root.querySelector("[data-cv-percentage]").textContent = percentage;
+  const track = root.querySelector(".cv-progress-track");
+  track.setAttribute("aria-valuenow", percentage);
+  root.querySelector("[data-cv-progress-bar]").style.width = `${percentage}%`;
+  root.querySelector("[data-cv-progress-label]").textContent = cv.complete
+    ? "Your CV is ready to use for applications."
+    : `${cv.completedRequired} of ${cv.totalRequired} required items completed`;
+  (cv.sections || []).forEach((section) => {
+    const link = root.querySelector(`[data-cv-step="${section.key}"]`);
+    if (!link) return;
+    link.classList.toggle("complete", Boolean(section.complete));
+    link.classList.toggle("has-data", Boolean(section.hasData));
+    link.title = section.required
+      ? `${section.percentage}% complete`
+      : section.hasData
+        ? "Optional section filled"
+        : "Optional section — you may skip it";
+  });
 }
 
 async function initPersonal(profile) {
@@ -374,6 +530,7 @@ async function initPersonal(profile) {
       await api("/api/v1/me/profile", json("PUT", formData(form)));
       notify("Personal information saved.");
       await loadHeaderProfile();
+      window.location.assign("/portal/profile/addresses");
     } catch (error) {
       notify(error.message, "error");
     }
@@ -438,7 +595,6 @@ async function initAddresses() {
       );
       upazila.value = column(saved, "upazila_id");
     }
-
   }
 
   const present = forms.find((form) => form.dataset.type === "PRESENT");
@@ -452,10 +608,7 @@ async function initAddresses() {
       "districtId",
       "upazilaId",
     ]);
-    await api(
-      `/api/v1/me/addresses/${form.dataset.type}`,
-      json("PUT", body),
-    );
+    await api(`/api/v1/me/addresses/${form.dataset.type}`, json("PUT", body));
   };
 
   if (!present || !permanent || !sameAsPresent || !saveButton) {
@@ -513,6 +666,7 @@ async function initAddresses() {
         await saveAddress(form);
       }
       notify("Present and permanent addresses saved.");
+      window.location.assign("/portal/profile/education");
     } catch (error) {
       notify(error.message, "error");
     }
@@ -528,8 +682,8 @@ async function loadEducation(onEdit) {
           (row) => `
             <div class="list-item">
               <div>
-                <h3>${display(column(row, "qualification_name"))}</h3>
-                <p>${display(column(row, "subject_name"), "No subject / group")} · ${display(column(row, "institution_display_name"), "No university / board")}</p>
+                <h3>${display(column(row, "qualification_display_name") ?? column(row, "qualification_name"))}</h3>
+                <p>${display(column(row, "subject_display_name") ?? column(row, "subject_name"), "No subject / group")} · ${display(column(row, "institution_display_name"), "No university / board")}</p>
                 <p>
                   ${display(column(row, "result_type"))}
                   ${display(column(row, "result_value") ?? column(row, "result_grade"), "")}
@@ -588,15 +742,75 @@ async function initEducation() {
     ),
   ]);
   const qualification = form.elements.qualificationId;
+  const qualificationName = form.elements.qualificationName;
   const subject = form.elements.subjectId;
+  const institution = form.elements.institutionId;
+  const subjectName = form.elements.subjectName;
+  const institutionName = form.elements.institutionName;
+  const resultType = form.elements.resultType;
+  const resultValue = form.elements.resultValue;
+  const resultScale = form.elements.resultScale;
+  const resultGrade = form.elements.resultGrade;
+  const selectedIsOther = (select) =>
+    /^others?$/i.test(select.selectedOptions[0]?.textContent?.trim() || "");
+  const syncCustomField = (select, input, container) => {
+    const enabled = selectedIsOther(select);
+    container.hidden = !enabled;
+    input.disabled = !enabled;
+    input.required = enabled;
+    if (!enabled) input.value = "";
+  };
+  const syncCustomFields = () => {
+    syncCustomField(
+      qualification,
+      qualificationName,
+      document.querySelector("#otherQualificationField"),
+    );
+    syncCustomField(
+      subject,
+      subjectName,
+      document.querySelector("#otherSubjectField"),
+    );
+    syncCustomField(
+      institution,
+      institutionName,
+      document.querySelector("#otherInstitutionField"),
+    );
+  };
+  const syncResultFields = () => {
+    const numericResult = ["CGPA", "GPA"].includes(resultType.value);
+    document.querySelector("#resultValueField").hidden = !numericResult;
+    document.querySelector("#resultScaleField").hidden = !numericResult;
+    document.querySelector("#resultGradeField").hidden = numericResult;
+    resultValue.disabled = !numericResult;
+    resultScale.disabled = !numericResult;
+    resultGrade.disabled = numericResult;
+    resultValue.required = numericResult;
+    resultScale.required = numericResult;
+    resultGrade.required = !numericResult;
+    if (numericResult) resultGrade.value = "";
+    else {
+      resultValue.value = "";
+      resultScale.value = "";
+    }
+  };
   const loadSubjects = async () => {
     const url = qualification.value
       ? `/api/v1/master-data/subjects?qualificationId=${qualification.value}`
       : "/api/v1/master-data/subjects";
     await fillSelect(subject, url, "Select subject / group");
+    syncCustomFields();
   };
-  qualification.addEventListener("change", loadSubjects);
+  qualification.addEventListener("change", async () => {
+    syncCustomFields();
+    await loadSubjects();
+  });
+  subject.addEventListener("change", syncCustomFields);
+  institution.addEventListener("change", syncCustomFields);
+  resultType.addEventListener("change", syncResultFields);
   if (qualification.value) await loadSubjects();
+  syncCustomFields();
+  syncResultFields();
   const saveButton = document.querySelector("#saveEducation");
   const cancelButton = document.querySelector("#cancelEducationEdit");
   const resetEducationForm = () => {
@@ -605,6 +819,8 @@ async function initEducation() {
     saveButton.textContent = "Save education";
     cancelButton.hidden = true;
     subject.innerHTML = option("", "Select subject / group");
+    syncCustomFields();
+    syncResultFields();
   };
   const editEducation = async (row) => {
     form.hidden = false;
@@ -612,10 +828,13 @@ async function initEducation() {
     qualification.value = column(row, "qualification_id") ?? "";
     await loadSubjects();
     subject.value = column(row, "subject_id") ?? "";
-    form.elements.institutionId.value = column(row, "institution_id") ?? "";
-    form.elements.institutionName.value =
-      column(row, "institution_name") ?? "";
+    institution.value = column(row, "institution_id") ?? "";
+    syncCustomFields();
+    qualificationName.value = column(row, "qualification_name") ?? "";
+    subjectName.value = column(row, "subject_name") ?? "";
+    institutionName.value = column(row, "institution_name") ?? "";
     form.elements.resultType.value = column(row, "result_type") ?? "CGPA";
+    syncResultFields();
     form.elements.resultValue.value = column(row, "result_value") ?? "";
     form.elements.resultScale.value = column(row, "result_scale") ?? "";
     form.elements.resultGrade.value = column(row, "result_grade") ?? "";
@@ -806,7 +1025,10 @@ async function additionalCrud(config) {
       config.numbers?.forEach((field) => {
         body[field] = body[field] === "" ? null : Number(body[field]);
       });
-      await api(id ? `${config.url}/${id}` : config.url, json(id ? "PUT" : "POST", body));
+      await api(
+        id ? `${config.url}/${id}` : config.url,
+        json(id ? "PUT" : "POST", body),
+      );
       form.reset();
       delete form.dataset.recordId;
       submitButton.textContent = config.createLabel;
@@ -937,35 +1159,37 @@ async function loadDocuments() {
   const activeTypes = new Map(
     rows.map((row) => [column(row, "document_type"), row]),
   );
-  await Promise.all([
-    ["PHOTO", "#photoPreview", "#photoPreviewEmpty"],
-    ["SIGNATURE", "#signaturePreview", "#signaturePreviewEmpty"],
-  ].map(async ([type, imageSelector, emptySelector]) => {
-    const image = document.querySelector(imageSelector);
-    const emptyState = document.querySelector(emptySelector);
-    if (!image || !emptyState) return;
-    const row = activeTypes.get(type);
-    image.hidden = !row;
-    emptyState.hidden = Boolean(row);
-    if (row) {
-      try {
-        await loadAuthenticatedImage(
-          image,
-          `/api/v1/me/documents/${type}/content?v=${column(row, "file_id")}`,
-        );
-      } catch (error) {
-        image.hidden = true;
-        emptyState.hidden = false;
-        emptyState.textContent = error.message;
+  await Promise.all(
+    [
+      ["PHOTO", "#photoPreview", "#photoPreviewEmpty"],
+      ["SIGNATURE", "#signaturePreview", "#signaturePreviewEmpty"],
+    ].map(async ([type, imageSelector, emptySelector]) => {
+      const image = document.querySelector(imageSelector);
+      const emptyState = document.querySelector(emptySelector);
+      if (!image || !emptyState) return;
+      const row = activeTypes.get(type);
+      image.hidden = !row;
+      emptyState.hidden = Boolean(row);
+      if (row) {
+        try {
+          await loadAuthenticatedImage(
+            image,
+            `/api/v1/me/documents/${type}/content?v=${column(row, "file_id")}`,
+          );
+        } catch (error) {
+          image.hidden = true;
+          emptyState.hidden = false;
+          emptyState.textContent = error.message;
+        }
+      } else {
+        if (image.dataset.objectUrl) {
+          URL.revokeObjectURL(image.dataset.objectUrl);
+          delete image.dataset.objectUrl;
+        }
+        image.removeAttribute("src");
       }
-    } else {
-      if (image.dataset.objectUrl) {
-        URL.revokeObjectURL(image.dataset.objectUrl);
-        delete image.dataset.objectUrl;
-      }
-      image.removeAttribute("src");
-    }
-  }));
+    }),
+  );
   document.querySelector("#documentList").innerHTML = rows.length
     ? rows
         .map(
@@ -1022,7 +1246,10 @@ function jobCard(job) {
 }
 
 async function loadJobs() {
-  const rows = await api("/api/v1/jobs");
+  const rows = (await api("/api/v1/jobs")).filter((job) => {
+    const deadline = new Date(column(job, "application_end_at")).getTime();
+    return !Number.isFinite(deadline) || deadline > Date.now();
+  });
   document.querySelector("#jobList").innerHTML = rows.length
     ? rows.map(jobCard).join("")
     : empty("There are no published positions right now.");
@@ -1180,7 +1407,9 @@ async function openJobCircular(jobId, download) {
     );
     if (!response.ok) {
       const payload = await response.json().catch(() => null);
-      throw new Error(payload?.message || "The circular PDF could not be loaded.");
+      throw new Error(
+        payload?.message || "The circular PDF could not be loaded.",
+      );
     }
     const url = URL.createObjectURL(await response.blob());
     if (download) {
@@ -1325,7 +1554,9 @@ async function initApplicationDetails() {
 async function initAdmitCards() {
   const cards = await api("/api/v1/me/admit-cards");
   document.querySelector("#admitCardList").innerHTML = cards.length
-    ? cards.map((card) => `
+    ? cards
+        .map(
+          (card) => `
       <article class="card job-card">
         <div><span class="badge">${escapeHtml(column(card, "exam_type"))}</span>
           <h2>${escapeHtml(column(card, "title"))}</h2>
@@ -1333,7 +1564,9 @@ async function initAdmitCards() {
           <p class="job-meta">Roll ${escapeHtml(column(card, "roll_number"))} · ${formatDate(column(card, "exam_start_at"), true)}</p>
           <p class="hint">${escapeHtml(column(card, "center_name"))} · Room ${escapeHtml(column(card, "room_number"))}</p>
         </div><a class="btn btn-primary" href="/portal/admit-cards/${column(card, "exam_candidate_id")}">View admit card</a>
-      </article>`).join("")
+      </article>`,
+        )
+        .join("")
     : empty("No admit card has been published for you yet.");
 }
 
@@ -1342,31 +1575,60 @@ async function initAdmitCardDetails() {
   const card = await api(`/api/v1/me/admit-cards/${candidateId}`);
   setText("#cardExamType", `${column(card, "exam_type")} examination`);
   setText("#cardName", column(card, "full_name"));
+  document.title = String(column(card, "tracking_number") || "admit-card");
   setText("#cardRoll", column(card, "roll_number"));
   document.querySelector("#cardDetails").innerHTML = [
-    detail("Position", `${column(card, "job_code")} · ${column(card, "job_title")}`),
+    detail(
+      "Position",
+      `${column(card, "job_code")} · ${column(card, "job_title")}`,
+    ),
     detail("Exam", column(card, "title")),
-    detail("Date and time", `${formatDate(column(card, "exam_start_at"), true)} – ${formatDate(column(card, "exam_end_at"), true)}`),
+    detail(
+      "Date and time",
+      `${formatDate(column(card, "exam_start_at"), true)} – ${formatDate(column(card, "exam_end_at"), true)}`,
+    ),
     detail("Reporting time", formatDate(column(card, "reporting_at"), true)),
-    detail("Center", `${column(card, "center_code")} · ${column(card, "center_name")}`),
+    detail(
+      "Center",
+      `${column(card, "center_code")} · ${column(card, "center_name")}`,
+    ),
     detail("Center address", column(card, "center_address")),
-    detail("Room", [column(card, "room_number"), column(card, "floor_name")].filter(Boolean).join(", ")),
+    detail(
+      "Room",
+      [column(card, "room_number"), column(card, "floor_name")]
+        .filter(Boolean)
+        .join(", "),
+    ),
     detail("Seat number", column(card, "seat_number")),
     detail("Tracking number", column(card, "tracking_number")),
     detail("CV number", column(card, "cv_number")),
   ].join("");
   const instructions = column(card, "instructions");
   document.querySelector("#cardInstructions").innerHTML = instructions
-    ? `<ol>${String(instructions).split(/\r?\n/).filter(Boolean).map((line) => `<li>${escapeHtml(line.replace(/^\d+[.)]\s*/, ""))}</li>`).join("")}</ol>`
+    ? `<ol>${String(instructions)
+        .split(/\r?\n/)
+        .filter(Boolean)
+        .map(
+          (line) => `<li>${escapeHtml(line.replace(/^\d+[.)]\s*/, ""))}</li>`,
+        )
+        .join("")}</ol>`
     : `<ol><li>Bring a printed copy of this admit card and an original photo identity document.</li>
       <li>Report at the center by the stated reporting time.</li>
       <li>Mobile phones, smart watches, bags and communication devices are prohibited.</li>
       <li>Use the same signature as submitted with your application.</li></ol>`;
   await Promise.all([
-    loadAuthenticatedImage(document.querySelector("#cardPhoto"), `/api/v1/me/admit-cards/${candidateId}/documents/PHOTO`),
-    loadAuthenticatedImage(document.querySelector("#cardSignature"), `/api/v1/me/admit-cards/${candidateId}/documents/SIGNATURE`),
+    loadAuthenticatedImage(
+      document.querySelector("#cardPhoto"),
+      `/api/v1/me/admit-cards/${candidateId}/documents/PHOTO`,
+    ),
+    loadAuthenticatedImage(
+      document.querySelector("#cardSignature"),
+      `/api/v1/me/admit-cards/${candidateId}/documents/SIGNATURE`,
+    ),
   ]);
-  document.querySelector("#printAdmitCard").addEventListener("click", () => window.print());
+  document
+    .querySelector("#printAdmitCard")
+    .addEventListener("click", () => window.print());
 }
 
 const initializers = {
@@ -1390,6 +1652,7 @@ document.querySelector("#applicantLogout")?.addEventListener("click", logout);
 (async () => {
   try {
     const profile = await loadHeaderProfile();
+    await initCvStepper();
     await initializers[page]?.(profile);
   } catch (error) {
     notify(error.message, "error");

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Education | Uttara Bank Career Portal</title>
     <link rel="icon" th:href="@{/images/logo/uttara-bank-mark.png}" />
-    <link rel="stylesheet" th:href="@{/css/app.css(v=13)}" />
+    <link rel="stylesheet" th:href="@{/css/app.css(v=22)}" />
   </head>
   <body class="admin-body" data-portal-page="education">
     <header th:replace="~{portal/fragments/header :: header}"></header>
@@ -15,6 +15,9 @@
       ></aside>
       <main class="admin-main">
         <div th:replace="~{portal/fragments/alerts :: alerts}"></div>
+        <div
+          th:replace="~{portal/profile/stepper :: stepper('education')}"
+        ></div>
         <div class="page-head">
           <div>
             <span class="page-kicker">Qualifications</span>
@@ -26,22 +29,31 @@
           </button>
         </div>
         <form class="card form-card" id="educationForm" hidden>
+          <p class="required-note">Fields marked with * are required.</p>
           <div class="form-grid">
             <div class="field">
               <label>Qualification *</label
               ><select name="qualificationId" required></select>
             </div>
-            <div class="field">
-              <label>Subject / group</label
-              ><select name="subjectId"></select>
+            <div class="field" id="otherQualificationField" hidden>
+              <label>Other qualification *</label
+              ><input name="qualificationName" maxlength="200" disabled />
             </div>
             <div class="field">
-              <label>University / Board</label
-              ><select name="institutionId"></select>
+              <label>Subject / group *</label
+              ><select name="subjectId" required></select>
+            </div>
+            <div class="field" id="otherSubjectField" hidden>
+              <label>Other subject / group *</label
+              ><input name="subjectName" maxlength="200" disabled />
             </div>
             <div class="field">
-              <label>Other university / board</label
-              ><input name="institutionName" maxlength="200" />
+              <label>University / Board *</label
+              ><select name="institutionId" required></select>
+            </div>
+            <div class="field" id="otherInstitutionField" hidden>
+              <label>Other university / board *</label
+              ><input name="institutionName" maxlength="200" disabled />
             </div>
             <div class="field">
               <label>Result type *</label
@@ -52,16 +64,29 @@
                 <option value="CLASS">Class</option>
               </select>
             </div>
-            <div class="field">
-              <label>Result value</label
-              ><input name="resultValue" type="number" step="0.01" />
+            <div class="field" id="resultValueField">
+              <label>Result value *</label
+              ><input
+                name="resultValue"
+                type="number"
+                min="0"
+                step="0.01"
+                required
+              />
             </div>
-            <div class="field">
-              <label>Result scale</label
-              ><input name="resultScale" type="number" step="0.01" />
+            <div class="field" id="resultScaleField">
+              <label>Result scale *</label
+              ><input
+                name="resultScale"
+                type="number"
+                min="0.01"
+                step="0.01"
+                required
+              />
             </div>
-            <div class="field">
-              <label>Division or class</label><input name="resultGrade" />
+            <div class="field" id="resultGradeField" hidden>
+              <label>Division or class *</label
+              ><input name="resultGrade" maxlength="30" disabled />
             </div>
             <div class="field">
               <label>Passing year *</label
@@ -75,8 +100,8 @@
             </div>
           </div>
           <div class="form-footer">
-            <span class="hint">Results are validated before saving.</span
-            ><div class="button-row">
+            <span class="hint">Results are validated before saving.</span>
+            <div class="button-row">
               <button
                 class="btn btn-secondary"
                 id="cancelEducationEdit"
@@ -92,8 +117,14 @@
           </div>
         </form>
         <div class="card"><div class="list" id="educationList"></div></div>
+        <div class="form-footer cv-step-actions">
+          <span class="hint">Add every qualification before continuing.</span
+          ><a class="btn btn-primary" href="/portal/profile/experience"
+            >Continue to experience</a
+          >
+        </div>
       </main>
     </div>
-    <script th:src="@{/js/portal.js(v=15)}"></script>
+    <script th:src="@{/js/portal.js(v=28)}"></script>
   </body>
 </html>

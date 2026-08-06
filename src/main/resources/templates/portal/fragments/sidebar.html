@@ -19,46 +19,10 @@
         </a>
         <a
           class="nav-link"
-          th:classappend="${activePage == 'personal'} ? ' active'"
+          th:classappend="${activePage == 'personal' or activePage == 'addresses' or activePage == 'education' or activePage == 'experience' or activePage == 'additional' or activePage == 'documents'} ? ' active'"
           th:href="@{/portal/profile/personal}"
+          >Build my CV</a
         >
-          Personal information
-        </a>
-        <a
-          class="nav-link"
-          th:classappend="${activePage == 'addresses'} ? ' active'"
-          th:href="@{/portal/profile/addresses}"
-        >
-          Addresses
-        </a>
-        <a
-          class="nav-link"
-          th:classappend="${activePage == 'education'} ? ' active'"
-          th:href="@{/portal/profile/education}"
-        >
-          Education
-        </a>
-        <a
-          class="nav-link"
-          th:classappend="${activePage == 'experience'} ? ' active'"
-          th:href="@{/portal/profile/experience}"
-        >
-          Experience
-        </a>
-        <a
-          class="nav-link"
-          th:classappend="${activePage == 'additional'} ? ' active'"
-          th:href="@{/portal/profile/additional}"
-        >
-          Additional information
-        </a>
-        <a
-          class="nav-link"
-          th:classappend="${activePage == 'documents'} ? ' active'"
-          th:href="@{/portal/profile/documents}"
-        >
-          Documents
-        </a>
         <div class="nav-label">Applications</div>
         <a
           class="nav-link"
